@@ -14,4 +14,6 @@ class UNREALRPG_API AUnrealRPGGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+public:
+	AUnrealRPGGameModeBase();
 };

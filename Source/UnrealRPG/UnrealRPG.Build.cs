@@ -6,6 +6,8 @@ public class UnrealRPG : ModuleRules
 {
 	public UnrealRPG(ReadOnlyTargetRules Target) : base(Target)
 	{
+		bUseUnity = false;
+
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
