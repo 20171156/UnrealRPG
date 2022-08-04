@@ -39,8 +39,7 @@ class UNREALRPG_API UDatatableInstance : public UGameInstance
 public:
 	UDatatableInstance();
 
-	UFUNCTION()
-	const FPlayableCharacterStatData& GetPlayableStatData(int32 Level);
+	FPlayableCharacterStatData* GetPlayableStatData(int32 Level);
 
 private:
 	UPROPERTY()

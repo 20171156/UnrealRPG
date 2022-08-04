@@ -15,7 +15,7 @@ UDatatableInstance::UDatatableInstance()
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance Loading Complete"));
 }
 
-const FPlayableCharacterStatData& UDatatableInstance::GetPlayableStatData(int32 Level)
+FPlayableCharacterStatData* UDatatableInstance::GetPlayableStatData(int32 Level)
 {
-	return *PlayableStat->FindRow<FPlayableCharacterStatData>(*FString::FromInt(Level), TEXT(""));
+	return PlayableStat->FindRow<FPlayableCharacterStatData>(*FString::FromInt(Level), TEXT(""));
 }

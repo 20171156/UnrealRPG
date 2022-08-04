@@ -5,7 +5,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
-//#include "PlayableStatComponent.h"
+#include "PlayableStatComponent.h"
 #include "DrawDebugHelpers.h"//디버깅용 코드
 
 // Sets default values
@@ -14,13 +14,11 @@ APlayableCharacter::APlayableCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	//생성자는 월드가 완전히 생성되기 전에 호출된다.
-	//그러므로 이 오브젝트에서 온전히 할 수 있는 행동만 하자. 다른 오브젝트나 액터를 참조하거나, 월드셋팅을 불러오지 말자.
 
 	//오브젝트 셋팅
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("PlayableSpringArm"));
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayableCamera"));
-	//PlayerStat = CreateDefaultSubobject<UPlayableStatComponent>(TEXT("PlayableSTAT"));
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
+	Stat = CreateDefaultSubobject<UPlayableStatComponent>(TEXT("STAT"));
 
 	SpringArm->SetupAttachment(GetCapsuleComponent());
 	Camera->SetupAttachment(SpringArm);
@@ -44,6 +42,17 @@ APlayableCharacter::APlayableCharacter()
 void APlayableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UE_LOG(LogTemp, Warning, TEXT("Level : %d"), Stat->GetLevel());
+	UE_LOG(LogTemp, Warning, TEXT("Experience : %d"), Stat->GetExperience());
+	UE_LOG(LogTemp, Warning, TEXT("Hp : %d"), Stat->GetHp());
+	UE_LOG(LogTemp, Warning, TEXT("Stamina : %d"), Stat->GetStamina());
+	UE_LOG(LogTemp, Warning, TEXT("Attack : %d"), Stat->GetAttack());
+}
+
+void APlayableCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 }
 
 // Called every frame
