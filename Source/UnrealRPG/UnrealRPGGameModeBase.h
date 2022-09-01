@@ -16,4 +16,20 @@ class UNREALRPG_API AUnrealRPGGameModeBase : public AGameModeBase
 	
 public:
 	AUnrealRPGGameModeBase();
+
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void OnUI();
+	
+	UFUNCTION()
+	void OffUI();
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UUserWidget> Widget;
+
+private:
+	UPROPERTY()
+	UUserWidget* Menu;
 };

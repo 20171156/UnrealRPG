@@ -24,7 +24,16 @@ public:
 	void Jump();
 
 	UFUNCTION()
-	void Attack();
+	void PrimaryAttack();
+	
+	UFUNCTION()
+	void ZoomIn();
+
+	UFUNCTION()
+	void ZoomOut();
+
+	UFUNCTION()//Test
+	void ChangeMenu();
 
 	UFUNCTION()
 	void MoveUpDown(float Value);
@@ -35,5 +44,20 @@ public:
 	UFUNCTION()
 	void Yaw(float Value);
 
-	
+	UFUNCTION()
+	void Pitch(float Value);
+
+public:
+	UPROPERTY()
+	float UpDownValue = 0.f;
+
+	UPROPERTY()
+	float LeftRightValue = 0.f;
+
+private:
+	UPROPERTY()
+	bool IsVisibleUI = false;
+
+	UPROPERTY()
+	int32 AttackIndex = 0;
 };

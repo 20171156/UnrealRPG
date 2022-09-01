@@ -2,14 +2,15 @@
 
 
 #include "UnrealRPGGameModeBase.h"
-#include "PlayableCharacter.h"
+#include "PlayerCharacterBase.h"
 #include "PlayableController.h"
+#include "Blueprint/UserWidget.h"
 
 AUnrealRPGGameModeBase::AUnrealRPGGameModeBase()
 {
-	DefaultPawnClass = APlayableCharacter::StaticClass();
+	DefaultPawnClass = APlayerCharacterBase::StaticClass();
 
-	static ConstructorHelpers::FClassFinder<ACharacter> BP_PlayableCharacter(TEXT("Blueprint'/Game/Blueprints/BP_PlayableCharacter.BP_PlayableCharacter_C'"));
+	static ConstructorHelpers::FClassFinder<ACharacter> BP_PlayableCharacter(TEXT("Blueprint'/Game/Blueprints/BP_PlayerCharacter.BP_PlayerCharacter_c'"));
 
 	if (BP_PlayableCharacter.Succeeded())
 	{
@@ -17,5 +18,32 @@ AUnrealRPGGameModeBase::AUnrealRPGGameModeBase()
 	}
 
 	PlayerControllerClass = APlayableController::StaticClass();
+}
 
+void AUnrealRPGGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (Widget)
+	{
+		Menu = CreateWidget<UUserWidget>(GetWorld(), Widget);
+	}
+}
+
+void AUnrealRPGGameModeBase::OnUI()
+{
+	if (Menu)
+	{
+		Menu->AddToViewport();
+		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
+	}
+}
+
+void AUnrealRPGGameModeBase::OffUI()
+{
+	if (Menu)
+	{
+		Menu->RemoveFromViewport();
+		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
+	}
 }
