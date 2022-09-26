@@ -20,7 +20,7 @@ void UMonsterStatComponent::InitializeComponent()
 	Super::InitializeComponent();
 
 	//추후 이름 박지말고 수정할 것
-	InitializeStatData(FName(TEXT("SkeletonWarlord")));
+	//InitializeStatData(FName(TEXT("SkeletonWarlord")));
 }
 
 // Called when the game starts
@@ -53,6 +53,10 @@ void UMonsterStatComponent::InitializeStatData(const FName& MonsterName)
 			SetCurrentHp(MaxHp);
 			SetCurrentSp(MaxSp);
 			SetCurrentMp(MaxMp);
+		}
+		else
+		{
+			
 		}
 	}
 }

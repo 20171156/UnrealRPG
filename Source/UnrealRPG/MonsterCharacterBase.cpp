@@ -3,8 +3,8 @@
 
 #include "MonsterCharacterBase.h"
 #include "MonsterStatComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "MonsterHpWidget.h"
 #include "MonsterAnimInstance.h"
 #include "MonsterAIController.h"
@@ -15,69 +15,39 @@ AMonsterCharacterBase::AMonsterCharacterBase()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	//캐릭터 타입 기본 셋팅
-	CharacterEnumType = ECharacterType::NormalMonster;
-
-	//오브젝트 셋팅
-	CurrentStat = CreateDefaultSubobject<UMonsterStatComponent>(TEXT("STAT"));
-	
-	RightWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RIGHTWEAPON"));
-	BackWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BACKWEAPON"));
-	RightWeaponCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RIGHTWEAPONCOLLISION"));
-	BackWeaponCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BACKWEAPONCOLLISION"));
-	
-	HpBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("HP_WIDGET"));
-
-	//Default Character Mesh Setting
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SM(TEXT("SkeletalMesh'/Game/SkeletonArmy/Characters/Warlord/SK_SkeletonWarlord.SK_SkeletonWarlord'"));
-	if (SM.Succeeded())
-	{
-		GetMesh()->SetSkeletalMesh(SM.Object);
-	}
-
-	FName WeaponRightSocketName {TEXT("WeaponRight_Socket")};
-	FName WeaponBackSocketName {TEXT("WeapnBack_Socket")};
-
-	RightWeapon->SetupAttachment(GetMesh(), WeaponRightSocketName);
-	BackWeapon->SetupAttachment(GetMesh(), WeaponBackSocketName);
-	RightWeaponCollision->SetupAttachment(GetMesh(), WeaponRightSocketName);
-	BackWeaponCollision->SetupAttachment(GetMesh(), WeaponBackSocketName);
-	HpBar->SetupAttachment(GetMesh());
-
-	HpBar->SetRelativeLocation(FVector(0.f, 0.f, 200.f));
-	HpBar->SetWidgetSpace(EWidgetSpace::Screen);
-
-	static ConstructorHelpers::FClassFinder<UUserWidget> UW(TEXT("WidgetBlueprint'/Game/UI/WBP_MonsterHpWidget.WBP_MonsterHpWidget_C'"));
-
-	if (UW.Succeeded())
-	{
-		HpBar->SetWidgetClass(UW.Class);
-		HpBar->SetDrawSize(FVector2D(200.f, 50.f));
-	}
-
 	Tags.Add(FName("Monster"));
+	
+	CurrentStat = CreateDefaultSubobject<UMonsterStatComponent>(TEXT("STAT"));
+	HpBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HP_WIDGET"));
 
-	//AI Class 셋팅
-	AIControllerClass = AMonsterAIController::StaticClass();
-	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	HpBarWidget->SetupAttachment(GetMesh());
+	HpBarWidget->SetDrawSize(FVector2D(200.f, 50.f));
+	HpBarWidget->SetRelativeLocation(FVector(0.f, 0.f, 200.f));
+	HpBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 }
 
 void AMonsterCharacterBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	HpBar->InitWidget();
-	auto HpWidget = Cast<UMonsterHpWidget>(HpBar->GetUserWidgetObject());
+	HpBarWidget->InitWidget();
+	auto HpWidget = Cast<UMonsterHpWidget>(HpBarWidget->GetUserWidgetObject());
 	if (HpWidget)
 	{
 		HpWidget->BindHp(CurrentStat);
 	}
 
 	MonsterAnimInstance = Cast<UMonsterAnimInstance>(GetMesh()->GetAnimInstance());
+
 	if (MonsterAnimInstance)
 	{
-		//MonsterAnimInstance->OnMontageEnded.AddDynamic(this, &AMonsterCharacterBase::OnPrimaryAttackMontageEnded);
-		//MonsterAnimInstance->OnAttackHit.AddUObject(this, &APlayerCharacterBase::AttackCheck);
+		MonsterAnimInstance->InitializeValue();
+		MonsterAnimInstance->OnMontageEnded.AddDynamic(this, &AMonsterCharacterBase::OnPrimaryAttackMontageEnded);
+		MonsterAnimInstance->OnAttackHit.AddUObject(this, &AMonsterCharacterBase::AttackCheck);
 	}
 }
 
@@ -94,14 +64,12 @@ void AMonsterCharacterBase::BeginPlay()
 	UE_LOG(LogTemp, Log, TEXT("MonsterHp : %d"), CurrentStat->GetHp());
 	UE_LOG(LogTemp, Log, TEXT("MonsterSp : %d"), CurrentStat->GetSp());
 	UE_LOG(LogTemp, Log, TEXT("MonsterMp : %d"), CurrentStat->GetMp());
-
 }
 
 // Called every frame
 void AMonsterCharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -109,4 +77,39 @@ void AMonsterCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AMonsterCharacterBase::ChangeMonsterState(const EMonsterState& ChangeState)
+{
+	CurrentState = ChangeState;
+}
+
+void AMonsterCharacterBase::PrimaryAttack()
+{
+	if (GetAttacking())
+	{
+		return;
+	}
+
+	MonsterAnimInstance->PlayPrimaryAttackMontage();
+	MonsterAnimInstance->JumpToSection();
+
+	if (MonsterAnimInstance->IsWeaponAttackMontageExist())
+	{
+		MonsterAnimInstance->PlayWeaponAttackMontage();
+	}
+	//AttackIndex = (AttackIndex + 1) % 4;
+
+	SetAttacking(true);
+}
+
+void AMonsterCharacterBase::AttackCheck()
+{
+}
+
+void AMonsterCharacterBase::OnPrimaryAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	SetAttacking(false);
+
+	OnMonsterAttackEnd.Broadcast();
 }

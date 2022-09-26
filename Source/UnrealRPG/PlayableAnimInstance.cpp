@@ -8,7 +8,7 @@
 
 UPlayableAnimInstance::UPlayableAnimInstance()
 {
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> AM(TEXT("AnimMontage'/Game/Animations/PlayerPrimaryAttack_Montage.PlayerPrimaryAttack_Montage'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> AM(TEXT("AnimMontage'/Game/Animations/AM_PlayerPrimaryAttack.AM_PlayerPrimaryAttack'"));
 	if (AM.Succeeded())
 	{
 		PrimaryAttackMontage = AM.Object;

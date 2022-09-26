@@ -3,26 +3,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIController.h"
-#include "MonsterAIController.generated.h"
+#include "MonsterAIController.h"
+#include "SorceryAIController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALRPG_API AMonsterAIController : public AAIController
+class UNREALRPG_API ASorceryAIController : public AMonsterAIController
 {
 	GENERATED_BODY()
-	
+
 public:
-	AMonsterAIController();
+	ASorceryAIController();
 
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
 
-protected:
+private:
 	UPROPERTY()
-	class UBlackboardData* BlackboardData;
-
+	class UBehaviorTree* BehaviorTree;
+	
 };

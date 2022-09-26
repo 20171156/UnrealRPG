@@ -4,19 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "MonsterBTInterface.h"
-#include "BTTask_FindPatrolPos.generated.h"
+#include "BTTask_RotateToTarget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALRPG_API UBTTask_FindPatrolPos : public UBTTaskNode, public IMonsterBTInterface
+class UNREALRPG_API UBTTask_RotateToTarget : public UBTTaskNode
 {
 	GENERATED_BODY()
 	
 public:
-	UBTTask_FindPatrolPos();
+	UBTTask_RotateToTarget();
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };

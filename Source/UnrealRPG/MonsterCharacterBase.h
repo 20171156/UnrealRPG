@@ -7,16 +7,6 @@
 #include "CustomEnum.h"
 #include "MonsterCharacterBase.generated.h"
 
-UENUM()//몬스터 상태 확인
-enum class MONSTERSTATE : uint8
-{
-	SPAWN UMETA(DisplayName = "SPAWN"),
-	WALK UMETA(DisplayName = "WALK"),
-	FOLLOWCHAR UMETA(DisplayName = "FOLLOWCHAR"),
-	ATTACK UMETA(DisplayName = "ATTACK"),
-	RETURN_SPAWNPOINT UMETA(DisplayName = "RETURNSPAWNPOINT"),
-};
-
 DECLARE_MULTICAST_DELEGATE(FMonsterOnAttackEnd);
 
 UCLASS()
@@ -39,37 +29,47 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void ChangeMonsterState(const EMonsterState& ChangeState);
+	const EMonsterState& GetMonsterState() { return CurrentState; }
+
 	void SetAttacking(bool bIsAttack) { bIsAttacking = bIsAttack; }
 	bool GetAttacking() { return bIsAttacking; }
 
-private:
+
+public:
+	//Delgate variable
+	FMonsterOnAttackEnd OnMonsterAttackEnd;
+
+public:
+	UFUNCTION()
+	void PrimaryAttack();
+
+	UFUNCTION()
+	void AttackCheck();
+
+	UFUNCTION()
+	void OnPrimaryAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+protected:
 	UPROPERTY(VisibleAnywhere)
 	class UMonsterStatComponent* CurrentStat;
 
 	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* RightWeapon;
+	EMonsterState CurrentState;
 
 	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* BackWeapon;
+	class UWidgetComponent* HpBarWidget;
+	
+	UPROPERTY()
+	class UMonsterAnimInstance* MonsterAnimInstance;
 
-	UPROPERTY(VisibleAnywhere)
-	class UCapsuleComponent* RightWeaponCollision;
-
-	UPROPERTY(VisibleAnywhere)
-	class UCapsuleComponent* BackWeaponCollision;
-
-	UPROPERTY(VisibleAnywhere)
-	class UWidgetComponent* HpBar;
-
+private:
 	UPROPERTY(VisibleAnywhere, Category = State)
 	bool bIsAttacking = false;
-
+	
 	UPROPERTY(VisibleAnywhere, Category = State)
 	bool bIsAttacked = false;
 
-	UPROPERTY()
-	ECharacterType CharacterEnumType;
-
-	UPROPERTY()
-	class UMonsterAnimInstance* MonsterAnimInstance;
+	//UPROPERTY()
+	//int32 AttackIndex = 0;
 };

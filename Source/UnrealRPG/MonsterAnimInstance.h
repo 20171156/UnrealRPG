@@ -6,8 +6,8 @@
 #include "Animation/AnimInstance.h"
 #include "MonsterAnimInstance.generated.h"
 
-//DECLARE_MULTICAST_DELEGATE(FMonsterSpawningMontage);
-//DECLARE_MULTICAST_DELEGATE(FMonsterAttackHitMontage);
+DECLARE_MULTICAST_DELEGATE(FOnAttackHit);
+
 /**
  * 
  */
@@ -18,35 +18,42 @@ class UNREALRPG_API UMonsterAnimInstance : public UAnimInstance
 	
 public:
 	UMonsterAnimInstance();
+
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-
-private:
-	void PlayMontage();
-
-	UFUNCTION()
-	void AnimNotify_SpawningMontage();
+	void InitializeValue();
 
 public:
-	//FMonsterSpawningMontage MonsterSpawningMontage;
-	//FMonsterAttackHitMontage MonsterAttackHitMontage;
+	bool IsWeaponAttackMontageExist();
+	void PlayPrimaryAttackMontage();
+	void PlayWeaponAttackMontage();//If exist WeaponAnimation, Play this function
+	void JumpToSection(/*int32 SectionIndex*/);
 
 private:
+	FName GetPrimaryAttackMontageSectionName(/*int32 SectionIndex*/);
+
+	//AllClass Notify
+	UFUNCTION()
+	void AnimNotify_AttackHit();
+
+public:
+	FOnAttackHit OnAttackHit;
+
+private:
+	UPROPERTY()
+	int32 SectionIndex = 0;
+
+	UPROPERTY()
+	int32 AllSectionIndex;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 	float Speed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
-	bool IsFalling;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MontageToPlay, Meta = (AllowPrivateAccess = true))
+	UAnimMontage* PrimaryAttackMontage;
 
-	//추후 aicontroller에 의해 움직일 때 받아와서 체크할 것
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
-	float Horizontal;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MontageToPlay, Meta = (AllowPrivateAccess = true))
+	UAnimMontage* WeaponAttackMontage;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
-	float Vertical;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
-	//UAnimMontage* SpawningMontage;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MontageToPlay, Meta = (AllowPrivateAccess = true))
 	//UAnimMontage* PrimaryAttackMontage;
 };

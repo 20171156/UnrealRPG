@@ -7,11 +7,14 @@
 
 UMonsterAnimInstance::UMonsterAnimInstance()
 {
-	//static ConstructorHelpers::FObjectFinder<UAnimMontage> SpawningM(TEXT("AnimMontage'/Game/Animations/SkeletonWarloadSpawning_Montage.SkeletonWarloadSpawning_Montage'"));
-	//if (SpawningM.Succeeded())
-	//{
-	//	SpawningMontage = SpawningM.Object;
-	//}
+}
+
+void UMonsterAnimInstance::InitializeValue()
+{
+	if (nullptr != PrimaryAttackMontage)
+	{
+		AllSectionIndex = PrimaryAttackMontage->CompositeSections.Num();
+	}
 }
 
 void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -21,15 +24,52 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (IsValid(Pawn))
 	{
 		Speed = Pawn->GetVelocity().Size();
-
-		auto Monster = Cast<AMonsterCharacterBase>(Pawn);
 	}
 }
 
-void UMonsterAnimInstance::PlayMontage()
+bool UMonsterAnimInstance::IsWeaponAttackMontageExist()
 {
+	if (nullptr == WeaponAttackMontage)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+
+	return false;
 }
 
-void UMonsterAnimInstance::AnimNotify_SpawningMontage()
+void UMonsterAnimInstance::PlayPrimaryAttackMontage()
 {
+	Montage_Play(PrimaryAttackMontage, 1.f);
+}
+
+void UMonsterAnimInstance::PlayWeaponAttackMontage()
+{
+	Montage_Play(WeaponAttackMontage, 1.f);
+}
+
+void UMonsterAnimInstance::JumpToSection(/*int32 SectionIndex*/)
+{
+	FName Name = GetPrimaryAttackMontageSectionName(/*SectionIndex*/);
+	Montage_JumpToSection(Name, PrimaryAttackMontage);
+	
+	if (IsWeaponAttackMontageExist())
+	{
+		Montage_JumpToSection(Name, WeaponAttackMontage);
+	}
+
+	SectionIndex = (SectionIndex + 1) % AllSectionIndex;
+}
+
+FName UMonsterAnimInstance::GetPrimaryAttackMontageSectionName(/*int32 SectionIndex*/)
+{
+	return FName(*FString::Printf(TEXT("PrimaryAttack%d"), SectionIndex));
+}
+
+void UMonsterAnimInstance::AnimNotify_AttackHit()
+{
+	OnAttackHit.Broadcast();
 }

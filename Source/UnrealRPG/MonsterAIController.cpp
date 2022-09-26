@@ -11,11 +11,7 @@
 
 AMonsterAIController::AMonsterAIController()
 {
-	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BT(TEXT("BehaviorTree'/Game/AI/SkeletonAI/BT_Monster.BT_Monster'"));
-	if (BT.Succeeded())
-	{
-		BehaviorTree = BT.Object;
-	}
+	PrimaryActorTick.bCanEverTick = true;
 
 	static ConstructorHelpers::FObjectFinder<UBlackboardData> BB(TEXT("BlackboardData'/Game/AI/SkeletonAI/BB_Monster.BB_Monster'"));
 	if (BB.Succeeded())
@@ -27,19 +23,20 @@ AMonsterAIController::AMonsterAIController()
 void AMonsterAIController::BeginPlay()
 {
 	Super::BeginPlay();
+
 }
 
 void AMonsterAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	if (UseBlackboard(BlackboardData, Blackboard))
-	{
-		if (RunBehaviorTree(BehaviorTree))
-		{
-			UE_LOG(LogTemp, Log, TEXT("BlackboardData and BehaviorTree Load!"));
-		}
-	}
+	//if (UseBlackboard(BlackboardData, Blackboard))
+	//{
+		//if (RunBehaviorTree(BehaviorTree))
+		//{
+		//	UE_LOG(LogTemp, Log, TEXT("BlackboardData and BehaviorTree Load!"));
+		//}
+	//}
 }
 
 void AMonsterAIController::OnUnPossess()

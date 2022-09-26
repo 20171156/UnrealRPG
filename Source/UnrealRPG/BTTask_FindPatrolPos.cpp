@@ -4,8 +4,8 @@
 #include "BTTask_FindPatrolPos.h"
 #include "MonsterAIController.h"
 #include "NavigationSystem.h"
-#include "BehaviorTree/BehaviorTree.h"
-#include "BehaviorTree/BehaviorTreeComponent.h"
+//#include "BehaviorTree/BehaviorTree.h"
+//#include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "MonsterCharacterBase.h"
@@ -25,7 +25,7 @@ EBTNodeResult::Type UBTTask_FindPatrolPos::ExecuteTask(UBehaviorTreeComponent& O
 	{
 		return EBTNodeResult::Failed;
 	}
-
+	
 	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(GetWorld());
 	if (NavSystem == nullptr)
 		return EBTNodeResult::Failed;
@@ -34,15 +34,10 @@ EBTNodeResult::Type UBTTask_FindPatrolPos::ExecuteTask(UBehaviorTreeComponent& O
 	if (NavSystem->GetRandomPointInNavigableRadius(FVector::ZeroVector, 500.f, RandomLocation))
 	{
 		OwnerComp.GetBlackboardComponent()->SetValueAsVector(FName(TEXT("PatrolPos")), RandomLocation.Location);
-		
-		//FVector CurrentPawnLocation = Cast<AMonsterCharacterBase>(CurrentPawn)->GetMesh()->GetComponentLocation();
-		//FVector CurrentPawnLocation = CurrentPawn->GetActorLocation();
-		//FVector ToTarget = RandomLocation.Location - CurrentPawnLocation;
-		//FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
-		//Cast<AMonsterCharacterBase>(CurrentPawn)->GetMesh()->SetWorldRotation(LookAtRotation);
+
+		Cast<AMonsterCharacterBase>(CurrentPawn)->ChangeMonsterState(EMonsterState::AROUND);
 
 		return EBTNodeResult::Succeeded;
 	}
-
 	return EBTNodeResult::Failed;
 }
