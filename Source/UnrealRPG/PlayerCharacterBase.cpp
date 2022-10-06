@@ -148,6 +148,9 @@ void APlayerCharacterBase::AttackCheck()
 		FDamageEvent DamageEvent;
 		HitResult.Actor->TakeDamage(CurrentStat->GetAtk(), DamageEvent, GetController(), this);
 	}
+
+	//Collision Test Code
+	//GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void APlayerCharacterBase::OnPrimaryAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)

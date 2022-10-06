@@ -7,6 +7,7 @@
 #include "MonsterAnimInstance.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnAttackHit);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponAnimChange, FName);
 
 /**
  * 
@@ -18,29 +19,35 @@ class UNREALRPG_API UMonsterAnimInstance : public UAnimInstance
 	
 public:
 	UMonsterAnimInstance();
-
+	virtual void NativeInitializeAnimation() override;
+	virtual void NativeBeginPlay() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-	void InitializeValue();
 
 public:
-	bool IsWeaponAttackMontageExist();
 	void PlayPrimaryAttackMontage();
-	void PlayWeaponAttackMontage();//If exist WeaponAnimation, Play this function
 	void JumpToSection(/*int32 SectionIndex*/);
+	const FName GetCurrentSection();
+	
+	const int32& GetAllSectionIndex();
 
 private:
 	FName GetPrimaryAttackMontageSectionName(/*int32 SectionIndex*/);
+	void MonsterAttackEnded();
 
 	//AllClass Notify
 	UFUNCTION()
 	void AnimNotify_AttackHit();
 
+	UFUNCTION()
+	void AnimNotify_BowAnimChange();
+
 public:
 	FOnAttackHit OnAttackHit;
+	FOnWeaponAnimChange OnWeaponAnimChange;
 
 private:
 	UPROPERTY()
-	int32 SectionIndex = 0;
+	int32 CurrentSectionIndex = 0;
 
 	UPROPERTY()
 	int32 AllSectionIndex;
@@ -50,10 +57,4 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MontageToPlay, Meta = (AllowPrivateAccess = true))
 	UAnimMontage* PrimaryAttackMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MontageToPlay, Meta = (AllowPrivateAccess = true))
-	UAnimMontage* WeaponAttackMontage;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MontageToPlay, Meta = (AllowPrivateAccess = true))
-	//UAnimMontage* PrimaryAttackMontage;
 };

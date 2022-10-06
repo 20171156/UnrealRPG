@@ -27,17 +27,16 @@ public:
 	FString GetEStateAsString(EMonsterState EnumValue);
 
 private:
-	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* RightWeapon;
+	UPROPERTY()
+	FName LeftWeaponSocket = TEXT("WeaponLeft_Socket");
 
-	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* LeftWeapon;
+	UPROPERTY()
+	FName RightWeaponSocket = TEXT("WeaponRight_Socket");
 
-	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* BackWeapon;
+	UPROPERTY()
+	FName ShieldWeaponSocket = TEXT("Shield_Socket");
 
-	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* ShieldWeapon;
-
+	UPROPERTY()
+	FName BackWeaponSocket = TEXT("WeaponBack_Socket");
 
 };

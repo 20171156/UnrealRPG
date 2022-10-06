@@ -42,34 +42,39 @@ public:
 
 public:
 	UFUNCTION()
+	void AttackCheck();
+	
+	UFUNCTION()
 	void PrimaryAttack();
 
 	UFUNCTION()
-	void AttackCheck();
+	void PlayWeaponAnimation(FName SectionName);
 
 	UFUNCTION()
 	void OnPrimaryAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	UFUNCTION()
+	void OnWeaponMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
 protected:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
+	class UWidgetComponent* HpBarWidget;
+
+	UPROPERTY()
 	class UMonsterStatComponent* CurrentStat;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	EMonsterState CurrentState;
-
-	UPROPERTY(VisibleAnywhere)
-	class UWidgetComponent* HpBarWidget;
 	
 	UPROPERTY()
 	class UMonsterAnimInstance* MonsterAnimInstance;
 
-private:
+	UPROPERTY()
+	class UWeaponAnimInstance* WeaponAnimInstance;
+
 	UPROPERTY(VisibleAnywhere, Category = State)
 	bool bIsAttacking = false;
 	
 	UPROPERTY(VisibleAnywhere, Category = State)
 	bool bIsAttacked = false;
-
-	//UPROPERTY()
-	//int32 AttackIndex = 0;
 };

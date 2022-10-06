@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "MonsterHpWidget.h"
 #include "MonsterAnimInstance.h"
+#include "WeaponAnimInstance.h"
 #include "MonsterAIController.h"
 
 // Sets default values
@@ -28,6 +29,7 @@ AMonsterCharacterBase::AMonsterCharacterBase()
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	
 }
 
 void AMonsterCharacterBase::PostInitializeComponents()
@@ -45,9 +47,20 @@ void AMonsterCharacterBase::PostInitializeComponents()
 
 	if (MonsterAnimInstance)
 	{
-		MonsterAnimInstance->InitializeValue();
 		MonsterAnimInstance->OnMontageEnded.AddDynamic(this, &AMonsterCharacterBase::OnPrimaryAttackMontageEnded);
 		MonsterAnimInstance->OnAttackHit.AddUObject(this, &AMonsterCharacterBase::AttackCheck);
+		MonsterAnimInstance->OnWeaponAnimChange.AddUObject(this, &AMonsterCharacterBase::PlayWeaponAnimation);
+	}
+
+	auto Components = GetComponentsByTag(USkeletalMeshComponent::StaticClass(), FName{ TEXT("WeaponComponent") });
+	for (auto Comp : Components)
+	{
+		USkeletalMeshComponent* SMComp = Cast<USkeletalMeshComponent>(Comp);
+		if (nullptr != SMComp)
+		{
+			WeaponAnimInstance = Cast<UWeaponAnimInstance>(SMComp->GetAnimInstance());
+			WeaponAnimInstance->OnMontageEnded.AddDynamic(this, &AMonsterCharacterBase::OnWeaponMontageEnded);
+		}
 	}
 }
 
@@ -84,6 +97,10 @@ void AMonsterCharacterBase::ChangeMonsterState(const EMonsterState& ChangeState)
 	CurrentState = ChangeState;
 }
 
+void AMonsterCharacterBase::AttackCheck()
+{
+}
+
 void AMonsterCharacterBase::PrimaryAttack()
 {
 	if (GetAttacking())
@@ -92,19 +109,19 @@ void AMonsterCharacterBase::PrimaryAttack()
 	}
 
 	MonsterAnimInstance->PlayPrimaryAttackMontage();
-	MonsterAnimInstance->JumpToSection();
 
-	if (MonsterAnimInstance->IsWeaponAttackMontageExist())
+	if (FName{ TEXT("Archer") } != Tags[2])
 	{
-		MonsterAnimInstance->PlayWeaponAttackMontage();
+		MonsterAnimInstance->JumpToSection();
 	}
-	//AttackIndex = (AttackIndex + 1) % 4;
 
 	SetAttacking(true);
 }
 
-void AMonsterCharacterBase::AttackCheck()
+void AMonsterCharacterBase::PlayWeaponAnimation(FName SectionName)
 {
+	WeaponAnimInstance->PlayWeaponAttackMontage();
+	WeaponAnimInstance->JumpToSection(SectionName);
 }
 
 void AMonsterCharacterBase::OnPrimaryAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -112,4 +129,9 @@ void AMonsterCharacterBase::OnPrimaryAttackMontageEnded(UAnimMontage* Montage, b
 	SetAttacking(false);
 
 	OnMonsterAttackEnd.Broadcast();
+}
+
+void AMonsterCharacterBase::OnWeaponMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	WeaponAnimInstance->StopWeaponMontage();
 }

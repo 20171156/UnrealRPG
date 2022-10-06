@@ -3,6 +3,7 @@
 
 #include "BTTask_Attack.h"
 #include "MonsterCharacterBase.h"
+#include "SkeletonCharacterBase.h"
 #include "MonsterAIController.h"
 
 UBTTask_Attack::UBTTask_Attack()
@@ -16,7 +17,7 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	auto CurrentPawn = Cast<AMonsterCharacterBase>(OwnerComp.GetAIOwner()->GetPawn());
+	auto CurrentPawn = Cast<ASkeletonCharacterBase>(OwnerComp.GetAIOwner()->GetPawn());
 	if (CurrentPawn == nullptr)
 		return EBTNodeResult::Failed;
 
@@ -29,7 +30,7 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 			bIsAttacking = false;
 		});
 
-	UE_LOG(LogTemp, Log, TEXT("Monster Attacking!"));
+	//UE_LOG(LogTemp, Log, TEXT("Monster Attacking!"));
 	
 	return Result;
 }

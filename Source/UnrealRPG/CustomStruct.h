@@ -4,11 +4,6 @@
 #include "Engine/DataTable.h"
 #include "CustomStruct.generated.h"
 
-//USTRUCT()
-//struct FCustomStruct : public FTableRowBase
-//{
-//	GENERATED_USTRUCT_BODY()
-//};
 
 USTRUCT()
 struct FCharacterStatData : public FTableRowBase
