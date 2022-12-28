@@ -3,7 +3,6 @@
 
 #include "BTTask_Attack.h"
 #include "MonsterCharacterBase.h"
-#include "SkeletonCharacterBase.h"
 #include "MonsterAIController.h"
 
 UBTTask_Attack::UBTTask_Attack()
@@ -17,30 +16,44 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	auto CurrentPawn = Cast<ASkeletonCharacterBase>(OwnerComp.GetAIOwner()->GetPawn());
-	if (CurrentPawn == nullptr)
+	auto Monster = Cast<AMonsterCharacterBase>(OwnerComp.GetAIOwner()->GetPawn());
+	if (!IsValid(Monster))
 		return EBTNodeResult::Failed;
 
-	CurrentPawn->PrimaryAttack();
+	Monster->ExecuteAnimMontage(EMonsterAnimState::ATTACKING);
 	bIsAttacking = true;
-	Cast<AMonsterCharacterBase>(CurrentPawn)->ChangeMonsterState(EMonsterState::ATTACKING);
 
-	CurrentPawn->OnMonsterAttackEnd.AddLambda([this]()
+	Monster->OnMonsterAttackEnd.AddLambda([this]()
 		{
 			bIsAttacking = false;
 		});
 
-	//UE_LOG(LogTemp, Log, TEXT("Monster Attacking!"));
-	
-	return Result;
+	Monster->OnMonsterAttackedStart.AddLambda([this]()
+		{
+			bEnd = true;
+		});
+
+	return EBTNodeResult::InProgress;
 }
 
 void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
+	auto Monster = Cast<AMonsterCharacterBase>(OwnerComp.GetAIOwner()->GetPawn());
+	if (!IsValid(Monster))
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+
 	if (!bIsAttacking)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		return;
 	}
+
+	if (bEnd)
+	{
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		bEnd = false;
+	}
+
 }

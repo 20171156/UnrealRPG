@@ -4,14 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "MonsterBTInterface.h"
 #include "BTTask_FindPatrolPos.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALRPG_API UBTTask_FindPatrolPos : public UBTTaskNode, public IMonsterBTInterface
+class UNREALRPG_API UBTTask_FindPatrolPos : public UBTTaskNode
 {
 	GENERATED_BODY()
 	
@@ -19,4 +18,6 @@ public:
 	UBTTask_FindPatrolPos();
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
+	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 };

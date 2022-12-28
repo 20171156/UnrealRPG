@@ -21,6 +21,9 @@ public:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
 
+public:
+	//void SetBlackboardComponentData();
+
 protected:
 	UPROPERTY()
 	class UBlackboardData* BlackboardData;

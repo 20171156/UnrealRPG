@@ -37,6 +37,7 @@ void AMonsterAIController::OnPossess(APawn* InPawn)
 		//	UE_LOG(LogTemp, Log, TEXT("BlackboardData and BehaviorTree Load!"));
 		//}
 	//}
+
 }
 
 void AMonsterAIController::OnUnPossess()

@@ -16,46 +16,19 @@ APlayerCharacterBase::APlayerCharacterBase()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	//캐릭터 타입 기본 셋팅
-	CharacterEnumType = ECharacterType::Player;
-
-	//오브젝트 셋팅
+	Tags.Add(FName("Player"));
+	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
 	CurrentStat = CreateDefaultSubobject<UStatComponent>(TEXT("STAT"));
 
-	RightWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RIGHTWEAPON"));
-	LeftWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LEFTWEAPON"));
-	RightWeaponCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RIGHTWEAPONCOLLISION"));
-	LeftWeaponCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("LEFTWEAPONCOLLISION"));
-
-	//SpringArm->bUsePawnControlRotation = true;
 	SpringArm->TargetArmLength = 300.f;
 	SpringArm->SetRelativeRotation(FRotator(-38.f, 0.f, 0.f));
-
-	//일종의 국룰 위치, 메쉬가 정상적으로 등을 보이게 하려고 위치 다시 잡았음
 	GetMesh()->SetRelativeLocationAndRotation(FVector{ 0.f, 0.f, -88.f }, FRotator{ 0.f, -90.f, 0.f });
-
-	//Default Mesh Setting
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SM(TEXT("SkeletalMesh'/Game/ParagonAurora/Characters/Heroes/Aurora/Meshes/Aurora.Aurora'"));
-	if (SM.Succeeded())
-	{
-		GetMesh()->SetSkeletalMesh(SM.Object);
-	}
-
-	FName WeaponRightSocketName{ TEXT("weapon") };
-	FName WeaponLeftSocketName{ TEXT("weapon_l") };
 
 	SpringArm->SetupAttachment(GetCapsuleComponent());
 	Camera->SetupAttachment(SpringArm);
 
-	RightWeapon->SetupAttachment(GetMesh(), WeaponRightSocketName);
-	LeftWeapon->SetupAttachment(GetMesh(), WeaponLeftSocketName);
-	RightWeaponCollision->SetupAttachment(GetMesh(), WeaponRightSocketName);
-	LeftWeaponCollision->SetupAttachment(GetMesh(), WeaponLeftSocketName);
-
-	
-	Tags.Add(FName("Player"));
 }
 
 void APlayerCharacterBase::PostInitializeComponents()
@@ -66,7 +39,6 @@ void APlayerCharacterBase::PostInitializeComponents()
 	if (PlayerAnimInstance)
 	{
 		PlayerAnimInstance->OnMontageEnded.AddDynamic(this, &APlayerCharacterBase::OnPrimaryAttackMontageEnded);
-		PlayerAnimInstance->OnAttackHit.AddUObject(this, &APlayerCharacterBase::AttackCheck);
 	}
 }
 
@@ -74,6 +46,19 @@ void APlayerCharacterBase::PostInitializeComponents()
 void APlayerCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	auto WeaponComp = GetComponentsByClass(UCapsuleComponent::StaticClass());
+	for (const auto& Comp : WeaponComp)
+	{
+		if (Comp->ComponentHasTag(FName(TEXT("WeaponComponent"))))
+		{
+			WeaponCollisionComponent = Cast<UCapsuleComponent>(Comp);
+			Cast<UCapsuleComponent>(Comp)->SetCollisionProfileName("NoCollision");
+
+			WeaponCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacterBase::OnOverlapBegin);
+			WeaponCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacterBase::OnOverlapEnd);
+		}
+	}
 
 	UE_LOG(LogTemp, Log, TEXT("Player Spawn Complete!"));
 	UE_LOG(LogTemp, Log, TEXT("PlayerName : %s"), *CurrentStat->GetName());
@@ -97,65 +82,98 @@ void APlayerCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+float APlayerCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	CurrentStat->OnAttacked(DamageAmount);
+
+	return DamageAmount;
+}
+
+void APlayerCharacterBase::ChangeComponentCollisionRule()
+{
+	if (bIsAttacking)
+	{
+		//AnimMontage에 의해 공격 가능 상태가 되면 WeaponCollision을 활성화
+		WeaponCollisionComponent->SetCollisionProfileName("Weapon");
+	}
+	else
+	{
+		//평소에는 불필요한 충돌을 줄이기 위해 WeaponCollision을 비활성화
+		WeaponCollisionComponent->SetCollisionProfileName("NoCollision");
+	}
+}
+
+void APlayerCharacterBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!bIsAttacking)
+	{
+		return;
+	}
+
+	if (!OtherActor->ActorHasTag(FName(TEXT("Monster"))))
+	{
+		return;
+	}
+	
+	if (FString(TEXT("CharacterMesh0")) != OtherComp->GetName())
+	{
+		return;
+	}
+
+	if (bIsOverlapped)
+	{
+		return;
+	}
+
+	FDamageEvent DamageEvent;
+	OtherActor->TakeDamage(CurrentStat->GetAtk(), DamageEvent, GetController(), this);
+	bIsOverlapped = true;
+
+	++TestAttackCount;
+	UE_LOG(LogTemp, Log, TEXT("[HitActor : %s] [HiComponent : %s] Attack : %d!"), *OtherActor->GetName(), *OtherComp->GetName(), TestAttackCount);
+}
+
+void APlayerCharacterBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (!bIsAttacking)
+	{
+		return;
+	}
+
+	if (!OtherActor->ActorHasTag(FName(TEXT("Monster"))))
+	{
+		return;
+	}
+
+	if (FString(TEXT("CharacterMesh0")) != OtherComp->GetName())
+	{
+		return;
+	}
+
+	if (bIsOverlapped)
+	{
+		//Cast<AMonsterCharacterBase>(OtherActor)->IsAttacked(true);
+
+		UE_LOG(LogTemp, Log, TEXT("[HitActor : %s] [HiComponent : %s] AttackEnd : %d!"), *OtherActor->GetName(), *OtherComp->GetName(), TestAttackCount);
+	}
+
+}
+
 void APlayerCharacterBase::PrimaryAttack()
 {
-	if (GetAttacking())
+	if (bIsPlayAnimation)
 	{
-		return;//공격중이면 더 공격하지 않고 취소함
+		return;
 	}
 
 	PlayerAnimInstance->PlayPrimaryAttackMontage();
 	PlayerAnimInstance->JumpToSection(AttackIndex);
 	AttackIndex = (AttackIndex + 1) % 3;
 
-	SetAttacking(true);
-}
-
-void APlayerCharacterBase::AttackCheck()
-{
-	FHitResult HitResult;
-	FCollisionQueryParams Params(NAME_None, false, this);
-
-	float AttackRange = 100.f;
-	float AttackRadius = 50.f;
-
-	bool bResult = GetWorld()->SweepSingleByChannel(
-		OUT HitResult,
-		GetActorLocation(),
-		GetActorLocation() + GetActorForwardVector() * AttackRange,
-		FQuat::Identity,
-		ECollisionChannel::ECC_Pawn,
-		FCollisionShape::MakeSphere(AttackRadius),
-		Params);
-
-	//FVector Vec = GetActorForwardVector() * AttackRange;
-	//FVector Center = GetActorLocation() + Vec * 0.5f;
-	//float HalfHeight = AttackRange * 0.5f + AttackRadius;
-	//FQuat Rotation = FRotationMatrix::MakeFromZ(Vec).ToQuat();
-	//FColor DrawColor;
-
-	//if (bResult)
-	//	DrawColor = FColor::Green;
-	//else
-	//	DrawColor = FColor::Red;
-
-	//DrawDebugCapsule(GetWorld(), Center, HalfHeight, AttackRadius, Rotation, DrawColor, false, 2.f);
-
-	if (bResult && HitResult.Actor.IsValid())
-	{
-		UE_LOG(LogTemp, Log, TEXT("HitActor : %s"), *HitResult.Actor->GetName());
-
-		FDamageEvent DamageEvent;
-		HitResult.Actor->TakeDamage(CurrentStat->GetAtk(), DamageEvent, GetController(), this);
-	}
-
-	//Collision Test Code
-	//GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	bIsPlayAnimation = true;
 }
 
 void APlayerCharacterBase::OnPrimaryAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	SetAttacking(false);
-
-	OnPlayerAttackEnd.Broadcast();
+	bIsPlayAnimation = false;
 }

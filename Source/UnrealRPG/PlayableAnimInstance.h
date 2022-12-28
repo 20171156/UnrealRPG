@@ -6,7 +6,6 @@
 #include "Animation/AnimInstance.h"
 #include "PlayableAnimInstance.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnAttackHit);
 /**
  * 
  */
@@ -25,13 +24,6 @@ public:
 
 private:
 	FName GetPrimaryAttackMontageSectionName(int32 SectionIndex);
-
-private:
-	UFUNCTION()
-	void AnimNotify_AttackHit();
-
-public:
-	FOnAttackHit OnAttackHit;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))

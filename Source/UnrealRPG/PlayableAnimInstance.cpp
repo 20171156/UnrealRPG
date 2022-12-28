@@ -53,8 +53,3 @@ FName UPlayableAnimInstance::GetPrimaryAttackMontageSectionName(int32 SectionInd
 {
 	return FName(*FString::Printf(TEXT("PrimaryAttack%d"), SectionIndex));
 }
-
-void UPlayableAnimInstance::AnimNotify_AttackHit()
-{
-	OnAttackHit.Broadcast();
-}

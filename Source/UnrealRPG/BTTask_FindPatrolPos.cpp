@@ -4,8 +4,6 @@
 #include "BTTask_FindPatrolPos.h"
 #include "MonsterAIController.h"
 #include "NavigationSystem.h"
-//#include "BehaviorTree/BehaviorTree.h"
-//#include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "MonsterCharacterBase.h"
@@ -20,12 +18,15 @@ EBTNodeResult::Type UBTTask_FindPatrolPos::ExecuteTask(UBehaviorTreeComponent& O
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	auto CurrentPawn = OwnerComp.GetAIOwner()->GetPawn();
-	if (CurrentPawn == nullptr)
-	{
+	//auto CurrentPawn = OwnerComp.GetAIOwner()->GetPawn();
+	//if (CurrentPawn == nullptr)
+	//{
+	//	return EBTNodeResult::Failed;
+	//}
+	auto Monster = Cast<AMonsterCharacterBase>(OwnerComp.GetAIOwner()->GetPawn());
+	if (!IsValid(Monster))
 		return EBTNodeResult::Failed;
-	}
-	
+
 	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(GetWorld());
 	if (NavSystem == nullptr)
 		return EBTNodeResult::Failed;
@@ -35,9 +36,12 @@ EBTNodeResult::Type UBTTask_FindPatrolPos::ExecuteTask(UBehaviorTreeComponent& O
 	{
 		OwnerComp.GetBlackboardComponent()->SetValueAsVector(FName(TEXT("PatrolPos")), RandomLocation.Location);
 
-		Cast<AMonsterCharacterBase>(CurrentPawn)->ChangeMonsterState(EMonsterState::AROUND);
-
 		return EBTNodeResult::Succeeded;
 	}
+
 	return EBTNodeResult::Failed;
+}
+
+void UBTTask_FindPatrolPos::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+{
 }

@@ -4,20 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTService.h"
-#include "MonsterBTInterface.h"
-#include "BTService_SearchTarget.generated.h"
+#include "BTService_MonsterIsDead.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALRPG_API UBTService_SearchTarget : public UBTService, public IMonsterBTInterface
+class UNREALRPG_API UBTService_MonsterIsDead : public UBTService
 {
 	GENERATED_BODY()
-	
+
 public:
-	UBTService_SearchTarget();
-		
-	//매 프레임마다 하진 않지만 주기적으로 Tick을 호출할 것
+	UBTService_MonsterIsDead();
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+	
 };

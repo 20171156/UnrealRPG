@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "CustomEnum.h"
 #include "PlayerCharacterBase.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FPlayerOnAttackEnd);
@@ -15,23 +14,24 @@ class UNREALRPG_API APlayerCharacterBase : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	APlayerCharacterBase();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-	void SetAttacking(bool bIsAttack) { bIsAttacking = bIsAttack; }
+	void IsAttacking(bool bIsAttacking_) { bIsAttacking = bIsAttacking_; }
+	void IsAttacked(bool bIsAttacked_) { bIsAttacked = bIsAttacked_; }
+
 	bool GetAttacking() { return bIsAttacking; }
+	bool GetAttacked() { return bIsAttacked; }
+
+	void OverlapCheckEnd() { bIsOverlapped = false; }
 
 public:
 	//Delgate variable
@@ -39,48 +39,54 @@ public:
 
 public:
 	UFUNCTION()
-	void PrimaryAttack();//일반공격
-	
-	UFUNCTION()
-	void AttackCheck();//몬스터와 Hit되면 호출
+	void ChangeComponentCollisionRule();
 
 	UFUNCTION()
-	void OnPrimaryAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);//실행중인 몽타주 애니메이션이 종료되면 호출
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void PrimaryAttack();
+
+	UFUNCTION()
+	void OnPrimaryAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
 	UPROPERTY()
-	ECharacterType CharacterEnumType;
-
-	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* RightWeapon;
-
-	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* LeftWeapon;
-
-	UPROPERTY(VisibleAnywhere)
-	class UCapsuleComponent* RightWeaponCollision;
-
-	UPROPERTY(VisibleAnywhere)
-	class UCapsuleComponent* LeftWeaponCollision;
-
-	UPROPERTY(VisibleAnywhere)
 	class USpringArmComponent* SpringArm;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	class UCameraComponent* Camera;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	class UStatComponent* CurrentStat;
 
 	UPROPERTY()
 	class UPlayableAnimInstance* PlayerAnimInstance;
 
-	UPROPERTY(VisibleAnywhere, Category = State)
+	UPROPERTY()
+	class UCapsuleComponent* WeaponCollisionComponent;
+
+	UPROPERTY()
 	bool bIsAttacking = false;
 
-	UPROPERTY(VisibleAnywhere, Category = State)
+	UPROPERTY()
 	bool bIsAttacked = false;
 
 	UPROPERTY()
+	bool bIsOverlapped = false;
+
+	UPROPERTY()
+	bool bIsDeath = false;
+
+	UPROPERTY()
+	bool bIsPlayAnimation = false;
+
+	UPROPERTY()
 	int32 AttackIndex = 0;
+
+	UPROPERTY()
+	int32 TestAttackCount = 0;
 };

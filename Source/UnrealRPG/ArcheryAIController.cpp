@@ -6,6 +6,7 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "CustomEnum.h"
 
 AArcheryAIController::AArcheryAIController()
 {
@@ -31,6 +32,8 @@ void AArcheryAIController::OnPossess(APawn* InPawn)
 	{
 		if (RunBehaviorTree(BehaviorTree))
 		{
+			GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("State")), (uint8)EMonsterAnimState::PEACE);
+			GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("PreviousState")), (uint8)EMonsterAnimState::PEACE);
 			UE_LOG(LogTemp, Log, TEXT("ArcheryAI Load Complete!"));
 		}
 	}

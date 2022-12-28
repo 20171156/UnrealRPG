@@ -8,6 +8,7 @@
 #include "MonsterStatComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FMonsterHpChanged);
+DECLARE_MULTICAST_DELEGATE(FMonsterHpZero);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UNREALRPG_API UMonsterStatComponent : public UActorComponent
@@ -51,6 +52,7 @@ public:
 
 public:
 	FMonsterHpChanged MonsterHpChanged;
+	FMonsterHpZero MonsterHpZero;
 
 private:
 	//고정 데이터

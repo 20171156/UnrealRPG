@@ -4,6 +4,12 @@
 #include "MonsterHpWidget.h"
 #include "MonsterStatComponent.h"
 #include "Components/ProgressBar.h"
+#include "Components/Button.h"
+
+void UMonsterHpWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+}
 
 void UMonsterHpWidget::BindHp(UMonsterStatComponent* StatComp)
 {
@@ -15,6 +21,9 @@ void UMonsterHpWidget::UpdateHp()
 {
 	if (CurrentStatComp.IsValid())
 	{
-		PB_HpBar->SetPercent(CurrentStatComp->GetHpRatio());
+		if (nullptr != HPBar)
+		{
+			HPBar->SetPercent(CurrentStatComp->GetHpRatio());
+		}
 	}
 }

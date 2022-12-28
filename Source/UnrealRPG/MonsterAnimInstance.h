@@ -4,14 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "CustomEnum.h"
 #include "MonsterAnimInstance.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnAttackHit);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponAnimChange, FName);
 
-/**
- * 
- */
 UCLASS()
 class UNREALRPG_API UMonsterAnimInstance : public UAnimInstance
 {
@@ -25,24 +22,23 @@ public:
 
 public:
 	void PlayPrimaryAttackMontage();
+	void PlayAttackedMontage();
+	void PlayDyingMontage();
+
+private:
+
 	void JumpToSection(/*int32 SectionIndex*/);
 	const FName GetCurrentSection();
 	
-	const int32& GetAllSectionIndex();
+	const int32& GetNumMontageSectionIndex() { return AllSectionIndex; }
 
 private:
-	FName GetPrimaryAttackMontageSectionName(/*int32 SectionIndex*/);
-	void MonsterAttackEnded();
-
-	//AllClass Notify
-	UFUNCTION()
-	void AnimNotify_AttackHit();
+	FName GetPrimaryAttackMontageSectionName();
 
 	UFUNCTION()
 	void AnimNotify_BowAnimChange();
 
 public:
-	FOnAttackHit OnAttackHit;
 	FOnWeaponAnimChange OnWeaponAnimChange;
 
 private:
@@ -55,6 +51,15 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 	float Speed;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
+	bool bIsDead = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MontageToPlay, Meta = (AllowPrivateAccess = true))
 	UAnimMontage* PrimaryAttackMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MontageToPlay, Meta = (AllowPrivateAccess = true))
+	UAnimMontage* AttackedMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MontageToPlay, Meta = (AllowPrivateAccess = true))
+	UAnimMontage* DyingMontage;
 };

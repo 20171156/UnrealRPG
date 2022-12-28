@@ -4,24 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BTTask_Attack.generated.h"
+#include "BTTask_SetPreviousState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALRPG_API UBTTask_Attack : public UBTTaskNode
+class UNREALRPG_API UBTTask_SetPreviousState : public UBTTaskNode
 {
 	GENERATED_BODY()
 	
+
 public:
-	UBTTask_Attack();
+	UBTTask_SetPreviousState();
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-
-private:
-	bool bIsAttacking = false;
-	bool bEnd = false;
 };

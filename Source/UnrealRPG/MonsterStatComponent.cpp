@@ -54,10 +54,6 @@ void UMonsterStatComponent::InitializeStatData(const FName& MonsterName)
 			SetCurrentSp(MaxSp);
 			SetCurrentMp(MaxMp);
 		}
-		else
-		{
-			
-		}
 	}
 }
 
@@ -65,9 +61,10 @@ void UMonsterStatComponent::SetCurrentHp(const int32& NewHp)
 {
 	CurrentHp = NewHp;
 
-	if (CurrentHp <= 0)
+	if (CurrentHp <= 0)//DeathÃ³¸®
 	{
 		CurrentHp = 0;
+		MonsterHpZero.Broadcast();
 	}
 
 	MonsterHpChanged.Broadcast();

@@ -16,18 +16,20 @@ bool UBTDecorator_CanAttack::CalculateRawConditionValue(UBehaviorTreeComponent& 
 {
 	bool bResult = Super::CalculateRawConditionValue(OwnerComp, NodeMemory);
 
-	auto CurrentPawn = OwnerComp.GetAIOwner()->GetPawn();
-	if (CurrentPawn == nullptr)
-	{
+	//auto CurrentPawn = OwnerComp.GetAIOwner()->GetPawn();
+	//if (CurrentPawn == nullptr)
+	//{
+	//	return false;
+	//}
+	auto Monster = Cast<AMonsterCharacterBase>(OwnerComp.GetAIOwner()->GetPawn());
+	if (!IsValid(Monster))
 		return false;
-	}
 
 	auto Target = Cast<APlayerCharacterBase>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName(TEXT("Target"))));
-	if (Target == nullptr)
+	if (!IsValid(Target))
 	{
-		Cast<AMonsterCharacterBase>(CurrentPawn)->ChangeMonsterState(EMonsterState::FOLLOWPLAYER);
 		return false;
 	}
 
-	return bResult && Target->GetDistanceTo(CurrentPawn) <= 200.f;
+	return bResult && Target->GetDistanceTo(Monster) <= 200.f;
 }

@@ -8,6 +8,9 @@
 #include "MonsterCharacterBase.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FMonsterOnAttackEnd);
+DECLARE_MULTICAST_DELEGATE(FMonsterOnAttackedStart);
+DECLARE_MULTICAST_DELEGATE(FMonsterOnAttackedEnd);
+DECLARE_MULTICAST_DELEGATE(FMonsterOnDying);
 
 UCLASS()
 class UNREALRPG_API AMonsterCharacterBase : public ACharacter
@@ -23,58 +26,77 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+//GET-SET Function
+public:
+	void IsCheckAttackAnim(bool bableAttacking_) { bableAttacking = bableAttacking_; }
+	bool GetDead() { return bIsDead; }
+	bool GetAttacked() { return bIsAttacked; }
+	bool GetMonsterArcherType() { return bIsArchery; }
+	void SetState(const EMonsterAnimState State);
 
-	void ChangeMonsterState(const EMonsterState& ChangeState);
-	const EMonsterState& GetMonsterState() { return CurrentState; }
+	const EMonsterAnimState& GetCurrentAnimState() { return CurrentAnimState; }
+	const EMonsterAnimState& GetPreviousAnimState() { return PreviousAnimState; }
 
-	void SetAttacking(bool bIsAttack) { bIsAttacking = bIsAttack; }
-	bool GetAttacking() { return bIsAttacking; }
+public:
+	UFUNCTION()
+	void ChangeComponentCollisionRule();
+
+	UFUNCTION()
+	void ExecuteAnimMontage(const EMonsterAnimState MonsterAnimState);
+
+	UFUNCTION()
+	void OnAnimMontageStarted(UAnimMontage* Montage);
+
+	UFUNCTION()
+	void OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+private:
+	UFUNCTION()
+	void PlayWeaponAnimation(FName SectionName);
+
+	UFUNCTION()
+	void MonsterHpZero();
 
 
 public:
 	//Delgate variable
 	FMonsterOnAttackEnd OnMonsterAttackEnd;
-
-public:
-	UFUNCTION()
-	void AttackCheck();
-	
-	UFUNCTION()
-	void PrimaryAttack();
-
-	UFUNCTION()
-	void PlayWeaponAnimation(FName SectionName);
-
-	UFUNCTION()
-	void OnPrimaryAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-
-	UFUNCTION()
-	void OnWeaponMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	FMonsterOnAttackedStart OnMonsterAttackedStart;
+	FMonsterOnAttackedEnd OnMonsterAttackedEnd;
+	FMonsterOnDying OnMonsterDying;
 
 protected:
 	UPROPERTY()
+	EMonsterAnimState CurrentAnimState = EMonsterAnimState::PEACE;
+
+	UPROPERTY()
+	EMonsterAnimState PreviousAnimState = EMonsterAnimState::PEACE;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = true))
 	class UWidgetComponent* HpBarWidget;
 
 	UPROPERTY()
 	class UMonsterStatComponent* CurrentStat;
 
 	UPROPERTY()
-	EMonsterState CurrentState;
-	
-	UPROPERTY()
 	class UMonsterAnimInstance* MonsterAnimInstance;
 
 	UPROPERTY()
 	class UWeaponAnimInstance* WeaponAnimInstance;
 
-	UPROPERTY(VisibleAnywhere, Category = State)
-	bool bIsAttacking = false;
-	
-	UPROPERTY(VisibleAnywhere, Category = State)
+	UPROPERTY()
+	bool bableAttacking = false;//공격가능한 타이밍체크하는 변수
+
+	UPROPERTY()
+	bool bIsDead = false;
+
+	UPROPERTY()
 	bool bIsAttacked = false;
+
+	UPROPERTY()
+	bool bIsArchery = false;
 };

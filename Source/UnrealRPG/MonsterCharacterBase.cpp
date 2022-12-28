@@ -17,7 +17,7 @@ AMonsterCharacterBase::AMonsterCharacterBase()
 	PrimaryActorTick.bCanEverTick = true;
 
 	Tags.Add(FName("Monster"));
-	
+
 	CurrentStat = CreateDefaultSubobject<UMonsterStatComponent>(TEXT("STAT"));
 	HpBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HP_WIDGET"));
 
@@ -25,11 +25,11 @@ AMonsterCharacterBase::AMonsterCharacterBase()
 	HpBarWidget->SetDrawSize(FVector2D(200.f, 50.f));
 	HpBarWidget->SetRelativeLocation(FVector(0.f, 0.f, 200.f));
 	HpBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	HpBarWidget->SetCollisionProfileName("NoCollision");
 
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
-	
 }
 
 void AMonsterCharacterBase::PostInitializeComponents()
@@ -44,24 +44,25 @@ void AMonsterCharacterBase::PostInitializeComponents()
 	}
 
 	MonsterAnimInstance = Cast<UMonsterAnimInstance>(GetMesh()->GetAnimInstance());
-
 	if (MonsterAnimInstance)
 	{
-		MonsterAnimInstance->OnMontageEnded.AddDynamic(this, &AMonsterCharacterBase::OnPrimaryAttackMontageEnded);
-		MonsterAnimInstance->OnAttackHit.AddUObject(this, &AMonsterCharacterBase::AttackCheck);
+		MonsterAnimInstance->OnMontageStarted.AddDynamic(this, &AMonsterCharacterBase::OnAnimMontageStarted);
+		MonsterAnimInstance->OnMontageEnded.AddDynamic(this, &AMonsterCharacterBase::OnAnimMontageEnded);
 		MonsterAnimInstance->OnWeaponAnimChange.AddUObject(this, &AMonsterCharacterBase::PlayWeaponAnimation);
+		//AnimState = MonsterAnimInstance->GetAnimState();
 	}
 
-	auto Components = GetComponentsByTag(USkeletalMeshComponent::StaticClass(), FName{ TEXT("WeaponComponent") });
-	for (auto Comp : Components)
+	auto SkelComps = GetComponentsByTag(USkeletalMeshComponent::StaticClass(), FName{ TEXT("WeaponComponent") });
+	for (auto SkelComp : SkelComps)
 	{
-		USkeletalMeshComponent* SMComp = Cast<USkeletalMeshComponent>(Comp);
+		USkeletalMeshComponent* SMComp = Cast<USkeletalMeshComponent>(SkelComp);
 		if (nullptr != SMComp)
 		{
 			WeaponAnimInstance = Cast<UWeaponAnimInstance>(SMComp->GetAnimInstance());
-			WeaponAnimInstance->OnMontageEnded.AddDynamic(this, &AMonsterCharacterBase::OnWeaponMontageEnded);
 		}
 	}
+
+	CurrentStat->MonsterHpZero.AddUObject(this, &AMonsterCharacterBase::MonsterHpZero);
 }
 
 // Called when the game starts or when spawned
@@ -69,14 +70,16 @@ void AMonsterCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp, Log, TEXT("Monster Spawn Complete!"));
-	UE_LOG(LogTemp, Log, TEXT("MonsterName : %s"), *CurrentStat->GetMonsterName().ToString());
-	UE_LOG(LogTemp, Log, TEXT("MonsterLevel : %d"), CurrentStat->GetLevel());
-	UE_LOG(LogTemp, Log, TEXT("MonsterAtk : %d"), CurrentStat->GetAtk());
-	UE_LOG(LogTemp, Log, TEXT("MonsterExp : %d"), CurrentStat->GetExp());
-	UE_LOG(LogTemp, Log, TEXT("MonsterHp : %d"), CurrentStat->GetHp());
-	UE_LOG(LogTemp, Log, TEXT("MonsterSp : %d"), CurrentStat->GetSp());
-	UE_LOG(LogTemp, Log, TEXT("MonsterMp : %d"), CurrentStat->GetMp());
+	//Archery Monster
+	for (const auto& Tag : Tags)
+	{
+		FString StringTag = Tag.ToString();
+		if (StringTag.Contains(FString(TEXT("Archer"))))
+		{
+			bIsArchery = true;
+			break;
+		}
+	}
 }
 
 // Called every frame
@@ -85,37 +88,101 @@ void AMonsterCharacterBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-// Called to bind functionality to input
-void AMonsterCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AMonsterCharacterBase::SetState(const EMonsterAnimState NewState)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	PreviousAnimState = CurrentAnimState;
+	CurrentAnimState = NewState;
 }
 
-void AMonsterCharacterBase::ChangeMonsterState(const EMonsterState& ChangeState)
+void AMonsterCharacterBase::ChangeComponentCollisionRule()
 {
-	CurrentState = ChangeState;
+	//if (bableAttacking)
+	//{
+	//	//AnimMontage에 의해 공격 가능 상태가 되면 WeaponCollision을 활성화
+	//	WeaponCollisionComponent->SetCollisionProfileName("Weapon");
+	//}
+	//else
+	//{
+	//	//평소에는 불필요한 충돌을 줄이기 위해 WeaponCollision을 비활성화
+	//	WeaponCollisionComponent->SetCollisionProfileName("NoCollision");
+	//}
 }
 
-void AMonsterCharacterBase::AttackCheck()
+void AMonsterCharacterBase::ExecuteAnimMontage(const EMonsterAnimState MonsterAnimState)
 {
-}
-
-void AMonsterCharacterBase::PrimaryAttack()
-{
-	if (GetAttacking())
+	//MonsterAnimInstance->StopAllMontages(0.f);
+	switch (MonsterAnimState)
 	{
-		return;
-	}
-
-	MonsterAnimInstance->PlayPrimaryAttackMontage();
-
-	if (FName{ TEXT("Archer") } != Tags[2])
+	case EMonsterAnimState::PEACE:
 	{
-		MonsterAnimInstance->JumpToSection();
+		break;
 	}
+	case EMonsterAnimState::CHASE:
+	{
+		break;
+	}
+	case EMonsterAnimState::ATTACKING:
+	{
+		MonsterAnimInstance->PlayPrimaryAttackMontage();
+		break;
+	}
+	case EMonsterAnimState::ATTACKED:
+	{
+		MonsterAnimInstance->PlayAttackedMontage();
+		break;
+	}
+	case EMonsterAnimState::DEAD:
+	{
+		MonsterAnimInstance->PlayDyingMontage();
+		break;
+	}
+	default:
+		break;
+	}
+}
 
-	SetAttacking(true);
+void AMonsterCharacterBase::OnAnimMontageStarted(UAnimMontage* Montage)
+{
+
+}
+
+void AMonsterCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	FString MontageName = Montage->GetName();
+
+	if (bInterrupted)
+	{
+		if (MontageName.Contains(FString(TEXT("Attacked"))))
+		{
+			OnMonsterAttackEnd.Broadcast();//공격당해서 중단됨
+		}
+	}
+	else//정상적으로 끝난 케이스
+	{
+		if (MontageName.Contains(FString(TEXT("Attacked"))))
+		{
+			SetState(PreviousAnimState);
+		}
+		else if (MontageName.Contains(FString(TEXT("PrimaryAttack"))))
+		{
+			OnMonsterAttackEnd.Broadcast();
+		}
+	}
+}
+
+float AMonsterCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	CurrentStat->OnAttacked(DamageAmount);
+
+	SetState(EMonsterAnimState::ATTACKED);
+	bIsAttacked = true;
+
+	OnMonsterAttackedStart.Broadcast();//어떤 상태의 ai든 중단시켜야 함
+	ExecuteAnimMontage(EMonsterAnimState::ATTACKED);
+	
+	return DamageAmount;
 }
 
 void AMonsterCharacterBase::PlayWeaponAnimation(FName SectionName)
@@ -124,14 +191,15 @@ void AMonsterCharacterBase::PlayWeaponAnimation(FName SectionName)
 	WeaponAnimInstance->JumpToSection(SectionName);
 }
 
-void AMonsterCharacterBase::OnPrimaryAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+void AMonsterCharacterBase::MonsterHpZero()
 {
-	SetAttacking(false);
+	SetState(EMonsterAnimState::DEAD);
+	bIsDead = true;
 
-	OnMonsterAttackEnd.Broadcast();
-}
+	OnMonsterDying.Broadcast();
+	ExecuteAnimMontage(EMonsterAnimState::DEAD);
 
-void AMonsterCharacterBase::OnWeaponMontageEnded(UAnimMontage* Montage, bool bInterrupted)
-{
-	WeaponAnimInstance->StopWeaponMontage();
+	//나머지 weapon들도 다 없애버려야할듯
+	GetMesh()->SetCollisionProfileName("NoCollision");
+	HpBarWidget->SetCollisionProfileName("NoCollision");
 }

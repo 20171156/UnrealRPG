@@ -33,15 +33,10 @@ void UWeaponAnimInstance::JumpToSection(FName SectionName)
 	Montage_JumpToSection(SectionName, WeaponAttackMontage);
 }
 
-const FName UWeaponAnimInstance::GetCurrentSection()
-{
-	return Montage_GetCurrentSection(WeaponAttackMontage);
-}
-
-void UWeaponAnimInstance::StopWeaponMontage()
-{
-
-}
+//const FName UWeaponAnimInstance::GetCurrentSection()
+//{
+//	return Montage_GetCurrentSection(WeaponAttackMontage);
+//}
 
 void UWeaponAnimInstance::AnimNotify_StopAnim()
 {

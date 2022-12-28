@@ -17,14 +17,12 @@ void UMonsterAnimInstance::NativeInitializeAnimation()
 	{
 		AllSectionIndex = PrimaryAttackMontage->CompositeSections.Num();
 	}
+
 }
 
 void UMonsterAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
-
-	AMonsterCharacterBase* Pawn = Cast<AMonsterCharacterBase>(TryGetPawnOwner());
-	Pawn->OnMonsterAttackEnd.AddUObject(this, &UMonsterAnimInstance::MonsterAttackEnded);
 }
 
 void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -33,7 +31,7 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	auto Pawn = TryGetPawnOwner();
 
-	if (IsValid(Pawn))
+	if (!bIsDead && IsValid(Pawn))
 	{
 		Speed = Pawn->GetVelocity().Size();
 	}
@@ -42,14 +40,29 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 void UMonsterAnimInstance::PlayPrimaryAttackMontage()
 {
 	Montage_Play(PrimaryAttackMontage, 1.f);
-	FName test = GetCurrentSection();
+
+	auto Pawn = TryGetPawnOwner();
+	if (!Cast<AMonsterCharacterBase>(Pawn)->GetMonsterArcherType())
+	{
+		JumpToSection();
+	}
 }
 
-void UMonsterAnimInstance::JumpToSection(/*int32 SectionIndex*/)
+void UMonsterAnimInstance::PlayAttackedMontage()
 {
-	FName Name = GetPrimaryAttackMontageSectionName(/*SectionIndex*/);
-	Montage_JumpToSection(Name, PrimaryAttackMontage);
+	Montage_Play(AttackedMontage, 1.0f);
+}
 
+void UMonsterAnimInstance::PlayDyingMontage()
+{
+	Montage_Play(DyingMontage, 1.f);
+}
+
+void UMonsterAnimInstance::JumpToSection()
+{
+	FName Name = GetPrimaryAttackMontageSectionName();
+	Montage_JumpToSection(Name, PrimaryAttackMontage);
+	
 	CurrentSectionIndex = (CurrentSectionIndex + 1) % AllSectionIndex;
 }
 
@@ -58,28 +71,14 @@ const FName UMonsterAnimInstance::GetCurrentSection()
 	return Montage_GetCurrentSection(PrimaryAttackMontage);
 }
 
-const int32& UMonsterAnimInstance::GetAllSectionIndex()
-{
-	return AllSectionIndex;
-}
-
-FName UMonsterAnimInstance::GetPrimaryAttackMontageSectionName(/*int32 SectionIndex*/)
+FName UMonsterAnimInstance::GetPrimaryAttackMontageSectionName()
 {
 	return FName(*FString::Printf(TEXT("PrimaryAttack%d"), CurrentSectionIndex));
-}
-
-void UMonsterAnimInstance::MonsterAttackEnded()
-{
-	//CurrentSectionIndex = 0;
-}
-
-void UMonsterAnimInstance::AnimNotify_AttackHit()
-{
-	OnAttackHit.Broadcast();
 }
 
 void UMonsterAnimInstance::AnimNotify_BowAnimChange()
 {
 	FName name = GetCurrentSection();
+
 	OnWeaponAnimChange.Broadcast(name);
 }

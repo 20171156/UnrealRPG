@@ -23,8 +23,7 @@ public:
 	void PlayWeaponAttackMontage();
 	void JumpToSection(FName SectionName);
 	
-	const FName GetCurrentSection();
-	void StopWeaponMontage();
+	//const FName GetCurrentSection();
 
 private:
 	UFUNCTION()

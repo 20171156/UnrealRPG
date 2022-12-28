@@ -24,19 +24,18 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	FString GetEStateAsString(EMonsterState EnumValue);
 
 private:
-	UPROPERTY()
-	FName LeftWeaponSocket = TEXT("WeaponLeft_Socket");
+	//UPROPERTY()
+	//FName LeftWeaponSocket = TEXT("WeaponLeft_Socket");
 
-	UPROPERTY()
-	FName RightWeaponSocket = TEXT("WeaponRight_Socket");
+	//UPROPERTY()
+	//FName RightWeaponSocket = TEXT("WeaponRight_Socket");
 
-	UPROPERTY()
-	FName ShieldWeaponSocket = TEXT("Shield_Socket");
+	//UPROPERTY()
+	//FName ShieldWeaponSocket = TEXT("Shield_Socket");
 
-	UPROPERTY()
-	FName BackWeaponSocket = TEXT("WeaponBack_Socket");
+	//UPROPERTY()
+	//FName BackWeaponSocket = TEXT("WeaponBack_Socket");
 
 };
