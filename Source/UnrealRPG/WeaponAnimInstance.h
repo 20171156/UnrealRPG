@@ -27,7 +27,7 @@ public:
 
 private:
 	UFUNCTION()
-	void AnimNotify_StopAnim();
+	void AnimNotify_PauseWeapon();
 
 private:
 	UPROPERTY()

@@ -30,7 +30,7 @@ public:
 
 //GET-SET Function
 public:
-	void IsCheckAttackAnim(bool bableAttacking_) { bableAttacking = bableAttacking_; }
+	void IsAttacking(bool bableAttacking_) { bableAttacking = bableAttacking_; }
 	bool GetDead() { return bIsDead; }
 	bool GetAttacked() { return bIsAttacked; }
 	bool GetMonsterArcherType() { return bIsArchery; }
@@ -41,7 +41,7 @@ public:
 
 public:
 	UFUNCTION()
-	void ChangeComponentCollisionRule();
+	void ChangeCollisionProfile();
 
 	UFUNCTION()
 	void ExecuteAnimMontage(const EMonsterAnimState MonsterAnimState);
@@ -57,6 +57,9 @@ public:
 private:
 	UFUNCTION()
 	void PlayWeaponAnimation(FName SectionName);
+
+	UFUNCTION()
+	void StopWeaponAnimation();
 
 	UFUNCTION()
 	void MonsterHpZero();

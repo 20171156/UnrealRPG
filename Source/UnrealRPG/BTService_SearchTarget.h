@@ -20,4 +20,9 @@ public:
 		
 	//매 프레임마다 하진 않지만 주기적으로 Tick을 호출할 것
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+
+private:
+	UPROPERTY(Category = Range, EditAnywhere)
+	int SearchRadius;
+
 };

@@ -28,6 +28,11 @@ EBTNodeResult::Type UBTTask_Attacked::ExecuteTask(UBehaviorTreeComponent& OwnerC
 			bIsAttacked = false;
 		});
 
+	Monster->OnMonsterAttackedStart.AddLambda([this]()
+		{
+			bIsAttacked = false;
+		});
+
 	return EBTNodeResult::InProgress;
 }
 

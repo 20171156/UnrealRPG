@@ -9,7 +9,6 @@
 
 UBTService_CheckMonsterState::UBTService_CheckMonsterState()
 {
-	Interval = 0.1f;
 }
 
 void UBTService_CheckMonsterState::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -24,8 +23,8 @@ void UBTService_CheckMonsterState::TickNode(UBehaviorTreeComponent& OwnerComp, u
 	if (Monster)
 	{
 		//if (EMonsterAnimState::ATTACKED <= Monster->GetCurrentAnimState())
-		{
-			auto State = Monster->GetCurrentAnimState();
+		//{
+			//auto State = Monster->GetCurrentAnimState();
 			//if (Monster->GetDead())
 			//{
 			//	OwnerComp.GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("State")), (uint8)EMonsterAnimState::DEAD);
@@ -35,10 +34,16 @@ void UBTService_CheckMonsterState::TickNode(UBehaviorTreeComponent& OwnerComp, u
 			//	OwnerComp.GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("State")), (uint8)EMonsterAnimState::ATTACKED);
 			//}
 			//else
-			{
-				OwnerComp.GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("State")), (uint8)State);
-				return;
-			}
-		}
+			//{
+			//	OwnerComp.GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("State")), (uint8)State);
+			//	return;
+			//}
+
+		auto test1 = Monster->GetPreviousAnimState();
+		OwnerComp.GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("PreviousState")), (uint8)test1);
+
+		auto test2 = Monster->GetCurrentAnimState();
+		OwnerComp.GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("State")), (uint8)test2);
+		//}
 	}
 }

@@ -24,8 +24,8 @@ EBTNodeResult::Type UBTTask_SetState::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	AMonsterCharacterBase* Monster = Cast<AMonsterCharacterBase>(CurrentPawn);
 	if (Monster)
 	{
-		uint8 PreviousState = OwnerComp.GetBlackboardComponent()->GetValueAsEnum(FName(TEXT("State")));
-		OwnerComp.GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("PreviousState")), PreviousState);
+		//uint8 PreviousState = OwnerComp.GetBlackboardComponent()->GetValueAsEnum(FName(TEXT("State")));
+		//OwnerComp.GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("PreviousState")), PreviousState);
 		
 		OwnerComp.GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("State")), (uint8)State);
 		Monster->SetState(State);
@@ -33,8 +33,3 @@ EBTNodeResult::Type UBTTask_SetState::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	return EBTNodeResult::Succeeded;
 }
-
-void UBTTask_SetState::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
-{
-}
-

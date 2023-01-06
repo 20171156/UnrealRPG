@@ -23,5 +23,4 @@ public:
 
 private:
 	bool bIsAttacking = false;
-	bool bEnd = false;
 };

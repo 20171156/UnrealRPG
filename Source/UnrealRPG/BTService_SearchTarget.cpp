@@ -12,6 +12,7 @@
 
 UBTService_SearchTarget::UBTService_SearchTarget()
 {
+	SearchRadius = 500.f;
 	NodeName = TEXT("SearchTarget");
 	Interval = 1.f;
 }
@@ -29,7 +30,7 @@ void UBTService_SearchTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 
 	UWorld* World = Monster->GetWorld();
 	FVector Center = Monster->GetActorLocation();
-	float SearchRadius = 500.f;
+	//float SearchRadius = 500.f;
 
 	if (World == nullptr)
 		return;

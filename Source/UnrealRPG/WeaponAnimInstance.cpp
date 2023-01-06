@@ -38,7 +38,7 @@ void UWeaponAnimInstance::JumpToSection(FName SectionName)
 //	return Montage_GetCurrentSection(WeaponAttackMontage);
 //}
 
-void UWeaponAnimInstance::AnimNotify_StopAnim()
+void UWeaponAnimInstance::AnimNotify_PauseWeapon()
 {
 	Montage_Pause(WeaponAttackMontage);
 }

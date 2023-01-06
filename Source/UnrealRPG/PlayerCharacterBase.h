@@ -25,13 +25,18 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-	void IsAttacking(bool bIsAttacking_) { bIsAttacking = bIsAttacking_; }
+	void IsAttacking(bool bIsAttacking_)
+	{
+		if (bIsAttacking_)
+		{
+			bIsOverlapped = false;
+		}
+		bIsAttacking = bIsAttacking_;
+	}
 	void IsAttacked(bool bIsAttacked_) { bIsAttacked = bIsAttacked_; }
 
 	bool GetAttacking() { return bIsAttacking; }
 	bool GetAttacked() { return bIsAttacked; }
-
-	void OverlapCheckEnd() { bIsOverlapped = false; }
 
 public:
 	//Delgate variable
@@ -39,7 +44,7 @@ public:
 
 public:
 	UFUNCTION()
-	void ChangeComponentCollisionRule();
+	void ChangeCollisionProfile();
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -89,4 +94,11 @@ private:
 
 	UPROPERTY()
 	int32 TestAttackCount = 0;
+
+	//충돌체크 변수 임시저장
+	UPROPERTY()
+	AActor* OverlapActor;
+
+	UPROPERTY()
+	UPrimitiveComponent* OverlapComp;
 };

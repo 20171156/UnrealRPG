@@ -49,7 +49,7 @@ void AMonsterCharacterBase::PostInitializeComponents()
 		MonsterAnimInstance->OnMontageStarted.AddDynamic(this, &AMonsterCharacterBase::OnAnimMontageStarted);
 		MonsterAnimInstance->OnMontageEnded.AddDynamic(this, &AMonsterCharacterBase::OnAnimMontageEnded);
 		MonsterAnimInstance->OnWeaponAnimChange.AddUObject(this, &AMonsterCharacterBase::PlayWeaponAnimation);
-		//AnimState = MonsterAnimInstance->GetAnimState();
+		MonsterAnimInstance->OnWeaponAnimStop.AddUObject(this, &AMonsterCharacterBase::StopWeaponAnimation);
 	}
 
 	auto SkelComps = GetComponentsByTag(USkeletalMeshComponent::StaticClass(), FName{ TEXT("WeaponComponent") });
@@ -90,11 +90,15 @@ void AMonsterCharacterBase::Tick(float DeltaTime)
 
 void AMonsterCharacterBase::SetState(const EMonsterAnimState NewState)
 {
-	PreviousAnimState = CurrentAnimState;
+	if (NewState != CurrentAnimState)
+	{
+		PreviousAnimState = CurrentAnimState;
+	}
+
 	CurrentAnimState = NewState;
 }
 
-void AMonsterCharacterBase::ChangeComponentCollisionRule()
+void AMonsterCharacterBase::ChangeCollisionProfile()
 {
 	//if (bableAttacking)
 	//{
@@ -110,7 +114,6 @@ void AMonsterCharacterBase::ChangeComponentCollisionRule()
 
 void AMonsterCharacterBase::ExecuteAnimMontage(const EMonsterAnimState MonsterAnimState)
 {
-	//MonsterAnimInstance->StopAllMontages(0.f);
 	switch (MonsterAnimState)
 	{
 	case EMonsterAnimState::PEACE:
@@ -143,7 +146,8 @@ void AMonsterCharacterBase::ExecuteAnimMontage(const EMonsterAnimState MonsterAn
 
 void AMonsterCharacterBase::OnAnimMontageStarted(UAnimMontage* Montage)
 {
-
+	FString MontageName = Montage->GetName();
+	UE_LOG(LogTemp, Log, TEXT("[Start MontageName : %s]"), *MontageName);
 }
 
 void AMonsterCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -152,12 +156,9 @@ void AMonsterCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInte
 
 	if (bInterrupted)
 	{
-		if (MontageName.Contains(FString(TEXT("Attacked"))))
-		{
-			OnMonsterAttackEnd.Broadcast();//공격당해서 중단됨
-		}
+		UE_LOG(LogTemp, Log, TEXT("[End MontageName : %s(Interrupted Case)]"), *MontageName);
 	}
-	else//정상적으로 끝난 케이스
+	else
 	{
 		if (MontageName.Contains(FString(TEXT("Attacked"))))
 		{
@@ -167,7 +168,13 @@ void AMonsterCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInte
 		{
 			OnMonsterAttackEnd.Broadcast();
 		}
+		else if (MontageName.Contains(FString(TEXT("Dying"))))
+		{
+			Destroy();
+		}
+		UE_LOG(LogTemp, Log, TEXT("[End MontageName : %s]"), *MontageName);
 	}
+
 }
 
 float AMonsterCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -179,9 +186,9 @@ float AMonsterCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& 
 	SetState(EMonsterAnimState::ATTACKED);
 	bIsAttacked = true;
 
-	OnMonsterAttackedStart.Broadcast();//어떤 상태의 ai든 중단시켜야 함
+	OnMonsterAttackEnd.Broadcast();//어떤 상태의 ai든 중단시켜야 함(일단 attack상태만 중단시키기)
 	ExecuteAnimMontage(EMonsterAnimState::ATTACKED);
-	
+
 	return DamageAmount;
 }
 
@@ -189,6 +196,11 @@ void AMonsterCharacterBase::PlayWeaponAnimation(FName SectionName)
 {
 	WeaponAnimInstance->PlayWeaponAttackMontage();
 	WeaponAnimInstance->JumpToSection(SectionName);
+}
+
+void AMonsterCharacterBase::StopWeaponAnimation()
+{
+	WeaponAnimInstance->StopAllMontages(0.f);
 }
 
 void AMonsterCharacterBase::MonsterHpZero()

@@ -4,6 +4,7 @@
 #include "BTTask_Attack.h"
 #include "MonsterCharacterBase.h"
 #include "MonsterAIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 UBTTask_Attack::UBTTask_Attack()
 {
@@ -20,17 +21,14 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	if (!IsValid(Monster))
 		return EBTNodeResult::Failed;
 
+	auto test = OwnerComp.GetBlackboardComponent()->GetValueAsEnum(FName(TEXT("State")));
+
 	Monster->ExecuteAnimMontage(EMonsterAnimState::ATTACKING);
 	bIsAttacking = true;
 
 	Monster->OnMonsterAttackEnd.AddLambda([this]()
 		{
 			bIsAttacking = false;
-		});
-
-	Monster->OnMonsterAttackedStart.AddLambda([this]()
-		{
-			bEnd = true;
 		});
 
 	return EBTNodeResult::InProgress;
@@ -49,11 +47,4 @@ void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
-
-	if (bEnd)
-	{
-		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		bEnd = false;
-	}
-
 }

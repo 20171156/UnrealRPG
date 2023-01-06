@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Animation/AnimInstance.h"
 #include "CustomEnum.h"
+#include "Animation/AnimInstance.h"
 #include "MonsterAnimInstance.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnWeaponAnimStop);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponAnimChange, FName);
 
 UCLASS()
@@ -16,6 +17,7 @@ class UNREALRPG_API UMonsterAnimInstance : public UAnimInstance
 	
 public:
 	UMonsterAnimInstance();
+	
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeBeginPlay() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
@@ -38,8 +40,12 @@ private:
 	UFUNCTION()
 	void AnimNotify_BowAnimChange();
 
+	UFUNCTION()
+	void AnimNotify_BowAnimStop();
+
 public:
 	FOnWeaponAnimChange OnWeaponAnimChange;
+	FOnWeaponAnimStop OnWeaponAnimStop;
 
 private:
 	UPROPERTY()

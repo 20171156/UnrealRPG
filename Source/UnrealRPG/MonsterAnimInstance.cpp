@@ -82,3 +82,8 @@ void UMonsterAnimInstance::AnimNotify_BowAnimChange()
 
 	OnWeaponAnimChange.Broadcast(name);
 }
+
+void UMonsterAnimInstance::AnimNotify_BowAnimStop()
+{
+	OnWeaponAnimStop.Broadcast();
+}

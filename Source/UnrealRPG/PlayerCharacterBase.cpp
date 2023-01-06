@@ -13,11 +13,11 @@
 // Sets default values
 APlayerCharacterBase::APlayerCharacterBase()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	Tags.Add(FName("Player"));
-	
+
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
 	CurrentStat = CreateDefaultSubobject<UStatComponent>(TEXT("STAT"));
@@ -89,7 +89,7 @@ float APlayerCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& D
 	return DamageAmount;
 }
 
-void APlayerCharacterBase::ChangeComponentCollisionRule()
+void APlayerCharacterBase::ChangeCollisionProfile()
 {
 	if (bIsAttacking)
 	{
@@ -110,53 +110,41 @@ void APlayerCharacterBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 		return;
 	}
 
-	if (!OtherActor->ActorHasTag(FName(TEXT("Monster"))))
+	if (!bIsOverlapped)//한번 더 오버랩 되는 것을 막기 위해서 체크
 	{
-		return;
-	}
-	
-	if (FString(TEXT("CharacterMesh0")) != OtherComp->GetName())
-	{
-		return;
-	}
+		if (!OtherActor->ActorHasTag(FName(TEXT("Monster"))))
+		{
+			return;
+		}
 
-	if (bIsOverlapped)
-	{
-		return;
+		if (FString(TEXT("CharacterMesh0")) != OtherComp->GetName())//Mesh의 경우에만 충돌체크를 허용함
+		{
+			return;
+		}
+
+		FDamageEvent DamageEvent;
+		OtherActor->TakeDamage(CurrentStat->GetAtk(), DamageEvent, GetController(), this);
+		bIsOverlapped = true;
+
+		OverlapActor = OtherActor;
+		OverlapComp = OtherComp;
+
+		//TestCode
+		++TestAttackCount;
+		UE_LOG(LogTemp, Log, TEXT("[HitActor : %s] [HiComponent : %s] Attack : %d!"), *OtherActor->GetName(), *OtherComp->GetName(), TestAttackCount);
 	}
-
-	FDamageEvent DamageEvent;
-	OtherActor->TakeDamage(CurrentStat->GetAtk(), DamageEvent, GetController(), this);
-	bIsOverlapped = true;
-
-	++TestAttackCount;
-	UE_LOG(LogTemp, Log, TEXT("[HitActor : %s] [HiComponent : %s] Attack : %d!"), *OtherActor->GetName(), *OtherComp->GetName(), TestAttackCount);
 }
 
 void APlayerCharacterBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (!bIsAttacking)
+	if (bIsOverlapped && OverlapActor == OtherActor && OverlapComp == OtherComp)
 	{
-		return;
-	}
-
-	if (!OtherActor->ActorHasTag(FName(TEXT("Monster"))))
-	{
-		return;
-	}
-
-	if (FString(TEXT("CharacterMesh0")) != OtherComp->GetName())
-	{
-		return;
-	}
-
-	if (bIsOverlapped)
-	{
-		//Cast<AMonsterCharacterBase>(OtherActor)->IsAttacked(true);
-
+		OverlapActor = nullptr;
+		OverlapComp = nullptr;
+		
+		//TestCode
 		UE_LOG(LogTemp, Log, TEXT("[HitActor : %s] [HiComponent : %s] AttackEnd : %d!"), *OtherActor->GetName(), *OtherComp->GetName(), TestAttackCount);
 	}
-
 }
 
 void APlayerCharacterBase::PrimaryAttack()

@@ -18,13 +18,13 @@ void UNotifyState_AttackCheck::NotifyBegin(USkeletalMeshComponent* MeshComp, UAn
 		{
 			APlayerCharacterBase* MeshOwner = Cast<APlayerCharacterBase>(MeshComp->GetOwner());
 			MeshOwner->IsAttacking(true);//이 때만 데미지 입기 가능
-			MeshOwner->ChangeComponentCollisionRule();
+			MeshOwner->ChangeCollisionProfile();
 		}
 		else if (MeshComp->GetOwner()->ActorHasTag(FName(TEXT("Monster"))))
 		{
 			AMonsterCharacterBase* MeshOwner = Cast<AMonsterCharacterBase>(MeshComp->GetOwner());
-			MeshOwner->IsCheckAttackAnim(true);
-			MeshOwner->ChangeComponentCollisionRule();
+			MeshOwner->IsAttacking(true);
+			MeshOwner->ChangeCollisionProfile();
 		}
 		else
 		{
@@ -127,14 +127,13 @@ void UNotifyState_AttackCheck::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnim
 		{
 			APlayerCharacterBase* MeshOwner = Cast<APlayerCharacterBase>(MeshComp->GetOwner());
 			MeshOwner->IsAttacking(false);
-			MeshOwner->OverlapCheckEnd();
-			MeshOwner->ChangeComponentCollisionRule();
+			MeshOwner->ChangeCollisionProfile();
 		}
 		else if (MeshComp->GetOwner()->ActorHasTag(FName(TEXT("Monster"))))
 		{
 			AMonsterCharacterBase* MeshOwner = Cast<AMonsterCharacterBase>(MeshComp->GetOwner());
-			MeshOwner->IsCheckAttackAnim(false);
-			MeshOwner->ChangeComponentCollisionRule();
+			MeshOwner->IsAttacking(false);
+			MeshOwner->ChangeCollisionProfile();
 		}
 		else
 		{
