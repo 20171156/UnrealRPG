@@ -4,6 +4,7 @@
 #include "MonsterCharacterBase.h"
 #include "MonsterStatComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "MonsterHpWidget.h"
 #include "MonsterAnimInstance.h"
@@ -52,13 +53,42 @@ void AMonsterCharacterBase::PostInitializeComponents()
 		MonsterAnimInstance->OnWeaponAnimStop.AddUObject(this, &AMonsterCharacterBase::StopWeaponAnimation);
 	}
 
-	auto SkelComps = GetComponentsByTag(USkeletalMeshComponent::StaticClass(), FName{ TEXT("WeaponComponent") });
-	for (auto SkelComp : SkelComps)
+	//모든 WeaponComponent Collision 비활성화
+	auto WeaponActors = GetComponentsByTag(UActorComponent::StaticClass(), FName{ TEXT("WeaponComponent") });
+	for (const auto& WeaponActor : WeaponActors)
 	{
-		USkeletalMeshComponent* SMComp = Cast<USkeletalMeshComponent>(SkelComp);
-		if (nullptr != SMComp)
+		if (IsValid(Cast<UStaticMeshComponent>(WeaponActor)))
 		{
-			WeaponAnimInstance = Cast<UWeaponAnimInstance>(SMComp->GetAnimInstance());
+			Cast<UStaticMeshComponent>(WeaponActor)->SetCollisionProfileName("NoCollision");
+		}
+		else
+		{
+			Cast<USkeletalMeshComponent>(WeaponActor)->SetCollisionProfileName("NoCollision");
+		}
+	}
+
+	//무기 중 애니메이션을 가지는 WeaponAnim 체크
+	auto SkelComps = GetComponentsByTag(USkeletalMeshComponent::StaticClass(), FName{ TEXT("WeaponComponent") });
+	for (const auto& SkelComp : SkelComps)
+	{
+		if (IsValid(Cast<USkeletalMeshComponent>(SkelComp)))
+		{
+			auto comp = Cast<USkeletalMeshComponent>(SkelComp);
+			WeaponAnimInstance = Cast<UWeaponAnimInstance>(comp->GetAnimInstance());
+		}
+	}
+
+	//Weapon은 HitEvent가 발동해야 한다
+	//무기 중 Attackable tag를 가진 무기만 Overlap 가능
+	auto StaticComps = GetComponentsByTag(UActorComponent::StaticClass(), FName{ TEXT("Attackable") });
+	for (const auto& StaticComp : StaticComps)
+	{
+		if (IsValid(Cast<UStaticMeshComponent>(StaticComp)))
+		{
+			WeaponComponent = Cast<UStaticMeshComponent>(StaticComp);
+			WeaponComponent->BodyInstance.bNotifyRigidBodyCollision = true;
+			WeaponComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonsterCharacterBase::OnWeaponOverlapBegin);
+			WeaponComponent->OnComponentEndOverlap.AddDynamic(this, &AMonsterCharacterBase::OnWeaponOverlapEnd);
 		}
 	}
 
@@ -88,6 +118,25 @@ void AMonsterCharacterBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+float AMonsterCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	CurrentStat->OnAttacked(DamageAmount);
+
+	if (!bIsDead)
+	{
+		SetState(EMonsterAnimState::ATTACKED);
+		bIsAttacked = true;
+
+		OnMonsterAttackEnd.Broadcast();//어떤 상태의 ai든 중단시켜야 함(일단 attack상태만 중단시키기)
+		ExecuteAnimMontage(EMonsterAnimState::ATTACKED);
+	}
+
+	return DamageAmount;
+}
+
+
 void AMonsterCharacterBase::SetState(const EMonsterAnimState NewState)
 {
 	if (NewState != CurrentAnimState)
@@ -98,18 +147,49 @@ void AMonsterCharacterBase::SetState(const EMonsterAnimState NewState)
 	CurrentAnimState = NewState;
 }
 
-void AMonsterCharacterBase::ChangeCollisionProfile()
+void AMonsterCharacterBase::ChangeCollisionProfile(bool bAbleOverlap)
 {
-	//if (bableAttacking)
-	//{
-	//	//AnimMontage에 의해 공격 가능 상태가 되면 WeaponCollision을 활성화
-	//	WeaponCollisionComponent->SetCollisionProfileName("Weapon");
-	//}
-	//else
-	//{
-	//	//평소에는 불필요한 충돌을 줄이기 위해 WeaponCollision을 비활성화
-	//	WeaponCollisionComponent->SetCollisionProfileName("NoCollision");
-	//}
+	if (bAbleOverlap)
+	{
+		//AnimMontage에 의해 공격 가능 상태가 되면 WeaponCollision을 활성화
+		WeaponComponent->SetCollisionProfileName("Weapon");
+	}
+	else
+	{
+		//평소에는 불필요한 충돌을 줄이기 위해 WeaponCollision을 비활성화
+		WeaponComponent->SetCollisionProfileName("NoCollision");
+		bIsAttacking = false;
+	}
+}
+
+void AMonsterCharacterBase::OnWeaponOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor == this)
+	{
+		return;
+	}
+
+	if (!bIsAttacking)
+	{
+		if (OtherActor->ActorHasTag(FName(TEXT("Player"))))
+		{
+			FDamageEvent DamageEvent;
+			OtherActor->TakeDamage(CurrentStat->GetAtk(), DamageEvent, GetController(), this);
+			bIsAttacking = true;
+		}
+	}
+}
+
+void AMonsterCharacterBase::OnWeaponOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (this == OtherActor)
+	{
+		return;
+	}
+
+	if (bIsAttacking)
+	{
+	}
 }
 
 void AMonsterCharacterBase::ExecuteAnimMontage(const EMonsterAnimState MonsterAnimState)
@@ -147,7 +227,6 @@ void AMonsterCharacterBase::ExecuteAnimMontage(const EMonsterAnimState MonsterAn
 void AMonsterCharacterBase::OnAnimMontageStarted(UAnimMontage* Montage)
 {
 	FString MontageName = Montage->GetName();
-	UE_LOG(LogTemp, Log, TEXT("[Start MontageName : %s]"), *MontageName);
 }
 
 void AMonsterCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -156,7 +235,7 @@ void AMonsterCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInte
 
 	if (bInterrupted)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[End MontageName : %s(Interrupted Case)]"), *MontageName);
+		//UE_LOG(LogTemp, Log, TEXT("[Monster End MontageName : %s(Interrupted Case)]"), *MontageName);
 	}
 	else
 	{
@@ -168,28 +247,18 @@ void AMonsterCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInte
 		{
 			OnMonsterAttackEnd.Broadcast();
 		}
-		else if (MontageName.Contains(FString(TEXT("Dying"))))
-		{
-			Destroy();
-		}
-		UE_LOG(LogTemp, Log, TEXT("[End MontageName : %s]"), *MontageName);
+		//else if (MontageName.Contains(FString(TEXT("Dying"))))
+		//{
+		//	FTimerHandle DestroyHandle;
+		//	float WaitTime = 1.5f;
+		//	GetWorld()->GetTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([&]()
+		//		{
+		//			Destroy();
+		//			GetWorldTimerManager().ClearTimer(DestroyHandle);
+		//		}), WaitTime, false);
+		//}
+		//UE_LOG(LogTemp, Log, TEXT("[End MontageName : %s]"), *MontageName);
 	}
-
-}
-
-float AMonsterCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
-	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	
-	CurrentStat->OnAttacked(DamageAmount);
-
-	SetState(EMonsterAnimState::ATTACKED);
-	bIsAttacked = true;
-
-	OnMonsterAttackEnd.Broadcast();//어떤 상태의 ai든 중단시켜야 함(일단 attack상태만 중단시키기)
-	ExecuteAnimMontage(EMonsterAnimState::ATTACKED);
-
-	return DamageAmount;
 }
 
 void AMonsterCharacterBase::PlayWeaponAnimation(FName SectionName)
@@ -208,10 +277,18 @@ void AMonsterCharacterBase::MonsterHpZero()
 	SetState(EMonsterAnimState::DEAD);
 	bIsDead = true;
 
-	OnMonsterDying.Broadcast();
 	ExecuteAnimMontage(EMonsterAnimState::DEAD);
 
-	//나머지 weapon들도 다 없애버려야할듯
 	GetMesh()->SetCollisionProfileName("NoCollision");
-	HpBarWidget->SetCollisionProfileName("NoCollision");
+}
+
+void AMonsterCharacterBase::CharacterDestroy()
+{
+	FTimerHandle DestroyHandle;
+	float WaitTime = 1.5f;
+	GetWorld()->GetTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([&]()
+		{
+			Destroy();
+			GetWorldTimerManager().ClearTimer(DestroyHandle);
+		}), WaitTime, false);
 }

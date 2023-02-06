@@ -16,16 +16,25 @@ class UNREALRPG_API UPlayableAnimInstance : public UAnimInstance
 	
 public:
 	UPlayableAnimInstance();
+
+	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 public:
 	void PlayPrimaryAttackMontage();
-	void JumpToSection(int32 SectionIndex);
+	void PlayAttackedMontage();
+	void PlayDyingMontage();
 
 private:
-	FName GetPrimaryAttackMontageSectionName(int32 SectionIndex);
+	void JumpToSection(const UAnimMontage* Montage);
 
 private:
+	UPROPERTY()
+	int32 CurrentSectionIndex = 0;
+
+	UPROPERTY()
+	int32 AllSectionIndex;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 	float Speed;
 
@@ -38,6 +47,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 	float Vertical;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MontageToPlay, Meta = (AllowPrivateAccess = true))
 	UAnimMontage* PrimaryAttackMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MontageToPlay, Meta = (AllowPrivateAccess = true))
+	UAnimMontage* AttackedMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MontageToPlay, Meta = (AllowPrivateAccess = true))
+	UAnimMontage* DyingMontage;
 };

@@ -5,6 +5,7 @@
 #include "PlayerCharacterBase.h"
 #include "PlayableAnimInstance.h"
 #include "GameFramework/PlayerInput.h"
+#include "CustomEnum.h"
 #include "UnrealRPGGameModeBase.h"
 
 APlayableController::APlayableController()
@@ -48,8 +49,7 @@ void APlayableController::Jump()
 
 void APlayableController::PrimaryAttack()
 {
-	Cast<APlayerCharacterBase>(GetCharacter())->PrimaryAttack();
-
+	Cast<APlayerCharacterBase>(GetCharacter())->ExecuteAnimMontage(EPlayerAnimState::ATTACKING);
 }
 
 void APlayableController::ZoomIn()

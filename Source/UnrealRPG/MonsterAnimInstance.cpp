@@ -17,12 +17,6 @@ void UMonsterAnimInstance::NativeInitializeAnimation()
 	{
 		AllSectionIndex = PrimaryAttackMontage->CompositeSections.Num();
 	}
-
-}
-
-void UMonsterAnimInstance::NativeBeginPlay()
-{
-	Super::NativeBeginPlay();
 }
 
 void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -44,7 +38,7 @@ void UMonsterAnimInstance::PlayPrimaryAttackMontage()
 	auto Pawn = TryGetPawnOwner();
 	if (!Cast<AMonsterCharacterBase>(Pawn)->GetMonsterArcherType())
 	{
-		JumpToSection();
+		JumpToSection(PrimaryAttackMontage);
 	}
 }
 
@@ -58,10 +52,15 @@ void UMonsterAnimInstance::PlayDyingMontage()
 	Montage_Play(DyingMontage, 1.f);
 }
 
-void UMonsterAnimInstance::JumpToSection()
+void UMonsterAnimInstance::Stop()
 {
-	FName Name = GetPrimaryAttackMontageSectionName();
-	Montage_JumpToSection(Name, PrimaryAttackMontage);
+	Montage_Stop(0.f, DyingMontage);
+}
+
+void UMonsterAnimInstance::JumpToSection(const UAnimMontage* Montage)
+{
+	FName Name = Montage->GetSectionName(CurrentSectionIndex);
+	Montage_JumpToSection(Name, Montage);
 	
 	CurrentSectionIndex = (CurrentSectionIndex + 1) % AllSectionIndex;
 }
@@ -69,11 +68,6 @@ void UMonsterAnimInstance::JumpToSection()
 const FName UMonsterAnimInstance::GetCurrentSection()
 {
 	return Montage_GetCurrentSection(PrimaryAttackMontage);
-}
-
-FName UMonsterAnimInstance::GetPrimaryAttackMontageSectionName()
-{
-	return FName(*FString::Printf(TEXT("PrimaryAttack%d"), CurrentSectionIndex));
 }
 
 void UMonsterAnimInstance::AnimNotify_BowAnimChange()
@@ -86,4 +80,10 @@ void UMonsterAnimInstance::AnimNotify_BowAnimChange()
 void UMonsterAnimInstance::AnimNotify_BowAnimStop()
 {
 	OnWeaponAnimStop.Broadcast();
+}
+
+void UMonsterAnimInstance::AnimNotify_MonsterIsDead()
+{
+	auto Pawn = TryGetPawnOwner();
+	Cast<AMonsterCharacterBase>(Pawn)->CharacterDestroy();
 }

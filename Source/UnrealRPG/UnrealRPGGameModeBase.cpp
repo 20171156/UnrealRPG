@@ -30,6 +30,11 @@ void AUnrealRPGGameModeBase::BeginPlay()
 	}
 }
 
+void AUnrealRPGGameModeBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+}
+
 void AUnrealRPGGameModeBase::OnUI()
 {
 	if (Menu)

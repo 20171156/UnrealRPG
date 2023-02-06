@@ -5,7 +5,7 @@
 
 UMyGameInstance::UMyGameInstance()
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> PlayerData(TEXT("DataTable'/Game/Datatable/StatDatatable_PlayableCharacter.StatDatatable_PlayableCharacter'"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> PlayerData(TEXT("DataTable'/Game/Datatable/StatDatatable_Player.StatDatatable_Player'"));
 	
 	static ConstructorHelpers::FObjectFinder<UDataTable> MonsterData(TEXT("DataTable'/Game/Datatable/StatDatatable_Monster.StatDatatable_Monster'"));
 
@@ -24,12 +24,20 @@ UMyGameInstance::UMyGameInstance()
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance Loading Complete"));
 }
 
-FCharacterStatData* UMyGameInstance::GetPlayerData(const int32& Level)
+FPlayerStatData* UMyGameInstance::GetPlayerData(const int32& Level)
 {
-	return PlayerStat->FindRow<FCharacterStatData>(*FString::FromInt(Level), TEXT("Missing PlayerData"));
+	return PlayerStat->FindRow<FPlayerStatData>(*FString::FromInt(Level), TEXT("Missing PlayerData"));
 }
 
-FCharacterStatData* UMyGameInstance::GetMonsterData(const FName& MonsterName)
+FMonsterStatData* UMyGameInstance::GetMonsterData(const FName& MonsterName)
 {
-	return MonsterStat->FindRow<FCharacterStatData>(MonsterName, TEXT("Missing MonsterData"));
+	return MonsterStat->FindRow<FMonsterStatData>(MonsterName, TEXT("Missing MonsterData"));
+}
+
+TArray<FMonsterStatData*> UMyGameInstance::GetMonsterAllData()
+{
+	TArray<FMonsterStatData*> Arr;
+	MonsterStat->GetAllRows(TEXT("Missing MonsterData"), Arr);
+	
+	return Arr;
 }

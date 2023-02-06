@@ -10,7 +10,7 @@
 DECLARE_MULTICAST_DELEGATE(FMonsterOnAttackEnd);
 DECLARE_MULTICAST_DELEGATE(FMonsterOnAttackedStart);
 DECLARE_MULTICAST_DELEGATE(FMonsterOnAttackedEnd);
-DECLARE_MULTICAST_DELEGATE(FMonsterOnDying);
+//DECLARE_MULTICAST_DELEGATE(FMonsterIsDelete);
 
 UCLASS()
 class UNREALRPG_API AMonsterCharacterBase : public ACharacter
@@ -27,21 +27,28 @@ protected:
 
 public:	
 	virtual void Tick(float DeltaTime) override;
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-//GET-SET Function
-public:
-	void IsAttacking(bool bableAttacking_) { bableAttacking = bableAttacking_; }
 	bool GetDead() { return bIsDead; }
-	bool GetAttacked() { return bIsAttacked; }
 	bool GetMonsterArcherType() { return bIsArchery; }
+
 	void SetState(const EMonsterAnimState State);
 
 	const EMonsterAnimState& GetCurrentAnimState() { return CurrentAnimState; }
 	const EMonsterAnimState& GetPreviousAnimState() { return PreviousAnimState; }
 
+	UFUNCTION()
+	void CharacterDestroy();
+
 public:
 	UFUNCTION()
-	void ChangeCollisionProfile();
+	void ChangeCollisionProfile(bool IsStart);
+
+	UFUNCTION()
+	void OnWeaponOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnWeaponOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION()
 	void ExecuteAnimMontage(const EMonsterAnimState MonsterAnimState);
@@ -51,8 +58,6 @@ public:
 
 	UFUNCTION()
 	void OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-
-	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 private:
 	UFUNCTION()
@@ -64,13 +69,12 @@ private:
 	UFUNCTION()
 	void MonsterHpZero();
 
-
 public:
 	//Delgate variable
 	FMonsterOnAttackEnd OnMonsterAttackEnd;
 	FMonsterOnAttackedStart OnMonsterAttackedStart;
 	FMonsterOnAttackedEnd OnMonsterAttackedEnd;
-	FMonsterOnDying OnMonsterDying;
+	//FMonsterIsDelete OnMonsterIsDelete;
 
 protected:
 	UPROPERTY()
@@ -89,16 +93,19 @@ protected:
 	class UMonsterAnimInstance* MonsterAnimInstance;
 
 	UPROPERTY()
+	class UStaticMeshComponent* WeaponComponent;//공격가능한 무기 CollisionCheck
+
+	UPROPERTY()
 	class UWeaponAnimInstance* WeaponAnimInstance;
 
 	UPROPERTY()
-	bool bableAttacking = false;//공격가능한 타이밍체크하는 변수
-
-	UPROPERTY()
-	bool bIsDead = false;
+	bool bIsAttacking = false;
 
 	UPROPERTY()
 	bool bIsAttacked = false;
+	
+	UPROPERTY()
+	bool bIsDead = false;
 
 	UPROPERTY()
 	bool bIsArchery = false;

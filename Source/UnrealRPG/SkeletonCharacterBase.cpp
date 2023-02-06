@@ -25,10 +25,10 @@ void ASkeletonCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CurrentStat->InitializeStatData(Tags[1]);
+	CurrentStat->InitializeStatData(Tags[1]);//무조건 추후 수정해야함
 
 	UE_LOG(LogTemp, Log, TEXT("Monster Spawn Complete!"));
-	UE_LOG(LogTemp, Log, TEXT("MonsterName : %s"), *CurrentStat->GetMonsterName().ToString());
+	UE_LOG(LogTemp, Log, TEXT("MonsterName : %s"), *CurrentStat->GetMonsterName());
 	UE_LOG(LogTemp, Log, TEXT("MonsterLevel : %d"), CurrentStat->GetLevel());
 	UE_LOG(LogTemp, Log, TEXT("MonsterAtk : %d"), CurrentStat->GetAtk());
 	UE_LOG(LogTemp, Log, TEXT("MonsterExp : %d"), CurrentStat->GetExp());

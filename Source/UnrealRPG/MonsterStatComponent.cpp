@@ -27,8 +27,6 @@ void UMonsterStatComponent::InitializeComponent()
 void UMonsterStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
 }
 
 void UMonsterStatComponent::InitializeStatData(const FName& MonsterName)
@@ -42,7 +40,7 @@ void UMonsterStatComponent::InitializeStatData(const FName& MonsterName)
 
 		if (MonsterStat)
 		{
-			this->CharacterName = MonsterStat->CharacterName;
+			//this->CharacterName = MonsterStat->CharacterName;
 			this->Level = MonsterStat->Level;
 			this->Atk = MonsterStat->Atk;
 			this->Exp = MonsterStat->Exp;
@@ -61,7 +59,7 @@ void UMonsterStatComponent::SetCurrentHp(const int32& NewHp)
 {
 	CurrentHp = NewHp;
 
-	if (CurrentHp <= 0)//DeathÃ³¸®
+	if (CurrentHp <= 0)
 	{
 		CurrentHp = 0;
 		MonsterHpZero.Broadcast();

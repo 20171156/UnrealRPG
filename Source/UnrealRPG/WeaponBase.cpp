@@ -23,6 +23,18 @@ AWeaponBase::AWeaponBase()
 	Root->SetCollisionProfileName(TEXT("NoCollision"));
 }
 
+void AWeaponBase::PostInitializeComponents()
+{
+ 	Super::PostInitializeComponents();
+	
+	if (nullptr != StaticMesh)
+	{
+		StaticMesh->BodyInstance.bNotifyRigidBodyCollision = true;//Weapon은 HitEvent가 발동해야 한다
+		StaticMesh->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnOverlapBegin);
+		StaticMesh->OnComponentEndOverlap.AddDynamic(this, &AWeaponBase::OnOverlapEnd);
+	}
+}
+
 // Called when the game starts or when spawned
 void AWeaponBase::BeginPlay()
 {
@@ -35,5 +47,27 @@ void AWeaponBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AWeaponBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor == this || OtherActor->ActorHasTag(FName(TEXT("Monster"))))
+	{
+		return;
+	}
+
+	int32 a = 0;
+	int32 b = a;
+}
+
+void AWeaponBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor == this || OtherActor->ActorHasTag(FName(TEXT("Monster"))))
+	{
+		return;
+	}
+
+	int32 a = 0;
+	int32 b = a;
 }
 

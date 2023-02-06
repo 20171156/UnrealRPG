@@ -19,29 +19,28 @@ public:
 	UMonsterAnimInstance();
 	
 	virtual void NativeInitializeAnimation() override;
-	virtual void NativeBeginPlay() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 public:
 	void PlayPrimaryAttackMontage();
 	void PlayAttackedMontage();
 	void PlayDyingMontage();
+	void Stop();
 
 private:
+	void JumpToSection(const UAnimMontage* Montage);
 
-	void JumpToSection(/*int32 SectionIndex*/);
 	const FName GetCurrentSection();
 	
-	const int32& GetNumMontageSectionIndex() { return AllSectionIndex; }
-
 private:
-	FName GetPrimaryAttackMontageSectionName();
-
 	UFUNCTION()
 	void AnimNotify_BowAnimChange();
 
 	UFUNCTION()
 	void AnimNotify_BowAnimStop();
+
+	UFUNCTION()
+	void AnimNotify_MonsterIsDead();
 
 public:
 	FOnWeaponAnimChange OnWeaponAnimChange;

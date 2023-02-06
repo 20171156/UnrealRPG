@@ -19,8 +19,9 @@ class UNREALRPG_API UMyGameInstance : public UGameInstance
 public:
 	UMyGameInstance();
 
-	FCharacterStatData* GetPlayerData(const int32& Level);
-	FCharacterStatData* GetMonsterData(const FName& MonsterName);
+	FPlayerStatData* GetPlayerData(const int32& Level);
+	FMonsterStatData* GetMonsterData(const FName& MonsterName);
+	TArray<FMonsterStatData*> GetMonsterAllData();
 
 private:
 	UPROPERTY()

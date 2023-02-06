@@ -8,10 +8,15 @@
 
 UPlayableAnimInstance::UPlayableAnimInstance()
 {
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> AM(TEXT("AnimMontage'/Game/Animations/AM_PlayerPrimaryAttack.AM_PlayerPrimaryAttack'"));
-	if (AM.Succeeded())
+}
+
+void UPlayableAnimInstance::NativeInitializeAnimation()
+{
+	Super::NativeInitializeAnimation();
+
+	if (nullptr != PrimaryAttackMontage)
 	{
-		PrimaryAttackMontage = AM.Object;
+		AllSectionIndex = PrimaryAttackMontage->CompositeSections.Num();
 	}
 }
 
@@ -41,15 +46,24 @@ void UPlayableAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 void UPlayableAnimInstance::PlayPrimaryAttackMontage()
 {
 	Montage_Play(PrimaryAttackMontage, 1.f);
+
+	JumpToSection(PrimaryAttackMontage);
 }
 
-void UPlayableAnimInstance::JumpToSection(int32 SectionIndex)
+void UPlayableAnimInstance::PlayAttackedMontage()
 {
-	FName Name = GetPrimaryAttackMontageSectionName(SectionIndex);
-	Montage_JumpToSection(Name, PrimaryAttackMontage);//몽타주 섹션 건너뛰고 플레이
+	Montage_Play(AttackedMontage, 1.f);
 }
 
-FName UPlayableAnimInstance::GetPrimaryAttackMontageSectionName(int32 SectionIndex)
+void UPlayableAnimInstance::PlayDyingMontage()
 {
-	return FName(*FString::Printf(TEXT("PrimaryAttack%d"), SectionIndex));
+	Montage_Play(DyingMontage, 1.f);
+}
+
+void UPlayableAnimInstance::JumpToSection(const UAnimMontage* Montage)
+{
+	FName Name = Montage->GetSectionName(CurrentSectionIndex);
+	Montage_JumpToSection(Name, Montage);
+
+	CurrentSectionIndex = (CurrentSectionIndex + 1) % AllSectionIndex;
 }

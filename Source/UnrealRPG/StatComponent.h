@@ -11,6 +11,7 @@ DECLARE_MULTICAST_DELEGATE(FPlayerHpChanged);
 DECLARE_MULTICAST_DELEGATE(FPlayerMpChanged);
 DECLARE_MULTICAST_DELEGATE(FPlayerSpChanged);
 DECLARE_MULTICAST_DELEGATE(FPlayerExpChanged);
+DECLARE_MULTICAST_DELEGATE(FPlayerHpZero);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UNREALRPG_API UStatComponent : public UActorComponent
@@ -63,6 +64,7 @@ public:
 	FPlayerMpChanged PlayerMpChanged;
 	FPlayerSpChanged PlayerSpChanged;
 	FPlayerExpChanged PlayerExpChanged;
+	FPlayerHpZero PlayerHpZero;
 
 private:
 	//고정 데이터

@@ -28,7 +28,6 @@ APlayerCharacterBase::APlayerCharacterBase()
 
 	SpringArm->SetupAttachment(GetCapsuleComponent());
 	Camera->SetupAttachment(SpringArm);
-
 }
 
 void APlayerCharacterBase::PostInitializeComponents()
@@ -38,27 +37,27 @@ void APlayerCharacterBase::PostInitializeComponents()
 	PlayerAnimInstance = Cast<UPlayableAnimInstance>(GetMesh()->GetAnimInstance());
 	if (PlayerAnimInstance)
 	{
-		PlayerAnimInstance->OnMontageEnded.AddDynamic(this, &APlayerCharacterBase::OnPrimaryAttackMontageEnded);
+		PlayerAnimInstance->OnMontageStarted.AddDynamic(this, &APlayerCharacterBase::OnAnimMontageStarted);
+		PlayerAnimInstance->OnMontageEnded.AddDynamic(this, &APlayerCharacterBase::OnAnimMontageEnded);
 	}
+
+	auto WeaponComps = GetComponentsByTag(UCapsuleComponent::StaticClass(), FName{ TEXT("WeaponComponent") });
+	for (const auto& WeaponComp : WeaponComps)
+	{
+		WeaponCollisionComponent = Cast<UCapsuleComponent>(WeaponComp);
+		WeaponCollisionComponent->SetCollisionProfileName("NoCollision");
+
+		WeaponCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacterBase::OnWeaponOverlapBegin);
+		WeaponCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacterBase::OnWeaponOverlapEnd);
+	}
+
+	CurrentStat->PlayerHpZero.AddUObject(this, &APlayerCharacterBase::PlayerHpZero);
 }
 
 // Called when the game starts or when spawned
 void APlayerCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
-
-	auto WeaponComp = GetComponentsByClass(UCapsuleComponent::StaticClass());
-	for (const auto& Comp : WeaponComp)
-	{
-		if (Comp->ComponentHasTag(FName(TEXT("WeaponComponent"))))
-		{
-			WeaponCollisionComponent = Cast<UCapsuleComponent>(Comp);
-			Cast<UCapsuleComponent>(Comp)->SetCollisionProfileName("NoCollision");
-
-			WeaponCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacterBase::OnOverlapBegin);
-			WeaponCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacterBase::OnOverlapEnd);
-		}
-	}
 
 	UE_LOG(LogTemp, Log, TEXT("Player Spawn Complete!"));
 	UE_LOG(LogTemp, Log, TEXT("PlayerName : %s"), *CurrentStat->GetName());
@@ -76,22 +75,37 @@ void APlayerCharacterBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-// Called to bind functionality to input
-void APlayerCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
 float APlayerCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
 	CurrentStat->OnAttacked(DamageAmount);
+	UE_LOG(LogTemp, Log, TEXT("Player HP : %d"), CurrentStat->GetHp());
+	
+	if (!bIsDead)
+	{
+		bIsAttacked = true;
+
+		ExecuteAnimMontage(EPlayerAnimState::ATTACKED);
+	}
 
 	return DamageAmount;
 }
 
-void APlayerCharacterBase::ChangeCollisionProfile()
+void APlayerCharacterBase::CharacterDestroy()
 {
-	if (bIsAttacking)
+	FTimerHandle DestroyHandle;
+	float WaitTime = 1.5f;
+	GetWorld()->GetTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([&]()
+		{
+			Destroy();
+			GetWorldTimerManager().ClearTimer(DestroyHandle);
+		}), WaitTime, false);
+}
+
+void APlayerCharacterBase::ChangeCollisionProfile(bool bAbleOverlap)
+{
+	if (bAbleOverlap)
 	{
 		//AnimMontage에 의해 공격 가능 상태가 되면 WeaponCollision을 활성화
 		WeaponCollisionComponent->SetCollisionProfileName("Weapon");
@@ -100,68 +114,104 @@ void APlayerCharacterBase::ChangeCollisionProfile()
 	{
 		//평소에는 불필요한 충돌을 줄이기 위해 WeaponCollision을 비활성화
 		WeaponCollisionComponent->SetCollisionProfileName("NoCollision");
+		bIsAttacking = false;
 	}
 }
 
-void APlayerCharacterBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void APlayerCharacterBase::OnWeaponOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (OtherActor == this)
+	{
+		return;
+	}
+
 	if (!bIsAttacking)
 	{
-		return;
-	}
-
-	if (!bIsOverlapped)//한번 더 오버랩 되는 것을 막기 위해서 체크
-	{
-		if (!OtherActor->ActorHasTag(FName(TEXT("Monster"))))
+		if (OtherActor->ActorHasTag(FName(TEXT("Monster"))))
 		{
-			return;
+			FDamageEvent DamageEvent;
+			OtherActor->TakeDamage(CurrentStat->GetAtk(), DamageEvent, GetController(), this);
+			bIsAttacking = true;
+			
+			++TestAttackCount;
+			//UE_LOG(LogTemp, Log, TEXT("[HitActor : %s] [HiComponent : %s] Attack : %d!"), *OtherActor->GetName(), *OtherComp->GetName(), TestAttackCount);
 		}
-
-		if (FString(TEXT("CharacterMesh0")) != OtherComp->GetName())//Mesh의 경우에만 충돌체크를 허용함
-		{
-			return;
-		}
-
-		FDamageEvent DamageEvent;
-		OtherActor->TakeDamage(CurrentStat->GetAtk(), DamageEvent, GetController(), this);
-		bIsOverlapped = true;
-
-		OverlapActor = OtherActor;
-		OverlapComp = OtherComp;
-
-		//TestCode
-		++TestAttackCount;
-		UE_LOG(LogTemp, Log, TEXT("[HitActor : %s] [HiComponent : %s] Attack : %d!"), *OtherActor->GetName(), *OtherComp->GetName(), TestAttackCount);
 	}
 }
 
-void APlayerCharacterBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void APlayerCharacterBase::OnWeaponOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (bIsOverlapped && OverlapActor == OtherActor && OverlapComp == OtherComp)
-	{
-		OverlapActor = nullptr;
-		OverlapComp = nullptr;
-		
-		//TestCode
-		UE_LOG(LogTemp, Log, TEXT("[HitActor : %s] [HiComponent : %s] AttackEnd : %d!"), *OtherActor->GetName(), *OtherComp->GetName(), TestAttackCount);
-	}
-}
-
-void APlayerCharacterBase::PrimaryAttack()
-{
-	if (bIsPlayAnimation)
+	if (this == OtherActor)
 	{
 		return;
 	}
 
-	PlayerAnimInstance->PlayPrimaryAttackMontage();
-	PlayerAnimInstance->JumpToSection(AttackIndex);
-	AttackIndex = (AttackIndex + 1) % 3;
-
-	bIsPlayAnimation = true;
+	if (bIsAttacking)
+	{
+		//UE_LOG(LogTemp, Log, TEXT("[HitActor : %s] [HiComponent : %s] AttackEnd : %d!"), *OtherActor->GetName(), *OtherComp->GetName(), TestAttackCount);
+	}
 }
 
-void APlayerCharacterBase::OnPrimaryAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+void APlayerCharacterBase::ExecuteAnimMontage(const EPlayerAnimState AnimState)
 {
-	bIsPlayAnimation = false;
+	switch (AnimState)
+	{
+	case EPlayerAnimState::PEACE:
+	{
+		break;
+	}
+	case EPlayerAnimState::CHASE:
+	{
+		break;
+	}
+	case EPlayerAnimState::ATTACKING:
+	{
+		PlayerAnimInstance->PlayPrimaryAttackMontage();
+		break;
+	}
+	case EPlayerAnimState::ATTACKED:
+	{
+		PlayerAnimInstance->PlayAttackedMontage();
+		break;
+	}
+	case EPlayerAnimState::DEAD:
+	{
+		PlayerAnimInstance->PlayDyingMontage();
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+void APlayerCharacterBase::OnAnimMontageStarted(UAnimMontage* Montage)
+{
+	FString MontageName = Montage->GetName();
+	//UE_LOG(LogTemp, Log, TEXT("[Player Start MontageName : %s]"), *MontageName);
+}
+
+void APlayerCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	FString MontageName = Montage->GetName();
+
+	if (bInterrupted)
+	{
+		//UE_LOG(LogTemp, Log, TEXT("[Player End MontageName : %s(Interrupted Case)]"), *MontageName);
+	}
+	else
+	{
+		if (MontageName.Contains(FString(TEXT("Dying"))))
+		{
+			Destroy();
+		}
+	}
+}
+
+void APlayerCharacterBase::PlayerHpZero()
+{
+	bIsDead = true;
+	ExecuteAnimMontage(EPlayerAnimState::DEAD);
+
+	//나머지 weapon들도 다 없애버려야할듯
+	GetMesh()->SetCollisionProfileName("NoCollision");
 }

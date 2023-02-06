@@ -28,8 +28,6 @@ void UStatComponent::InitializeComponent()
 void UStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
 }
 
 void UStatComponent::SetLevel(const int32& NewLevel)
@@ -60,14 +58,13 @@ void UStatComponent::SetName(const FString& NewName)
 
 void UStatComponent::SetCurrentHp(const int32& NewHp)
 {
-	CurrentHp += NewHp;
+	CurrentHp = NewHp;
 
 	if (CurrentHp <= 0)
 	{
 		CurrentHp = 0;
+		PlayerHpZero.Broadcast();
 	}
-
-	//broadcast 처리(애니메이션이나 death...)
 }
 
 void UStatComponent::SetCurrentSp(const int32& NewStamina)
@@ -78,8 +75,6 @@ void UStatComponent::SetCurrentSp(const int32& NewStamina)
 	{
 		CurrentSp = 0;
 	}
-
-	//broadcast 처리(애니메이션이나 death...)
 }
 
 void UStatComponent::SetCurrentMp(const int32& NewMana)
@@ -90,8 +85,6 @@ void UStatComponent::SetCurrentMp(const int32& NewMana)
 	{
 		CurrentMp = 0;
 	}
-
-	//broadcast 처리(애니메이션이나 death...)
 }
 
 void UStatComponent::SetCurrentExp(const int32& NewExperience)
@@ -108,8 +101,6 @@ void UStatComponent::SetCurrentExp(const int32& NewExperience)
 		CurrentExp -= MaxExp;
 		SetLevel(++Level);//오로지 레벨1만 오를때 처리가능
 	}
-
-	//broadcast 처리(애니메이션이나 death...)
 }
 
 void UStatComponent::OnAttacked(const int32& DamageAmount)

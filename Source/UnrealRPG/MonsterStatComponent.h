@@ -27,7 +27,7 @@ protected:
 public:	
 	void InitializeStatData(const FName& MonsterName);
 
-	const FName& GetMonsterName() { return CharacterName; }
+	const FString& GetMonsterName() { return CharacterName; }
 	const int32& GetLevel() { return Level; }
 	const int32& GetAtk() { return Atk; }
 	const int32& GetExp() { return Exp; }
@@ -57,7 +57,7 @@ public:
 private:
 	//고정 데이터
 	UPROPERTY(VisibleAnywhere, Category = Stat, Meta = (AllowPrivateAccess = true))
-	FName CharacterName;
+	FString CharacterName;
 
 	UPROPERTY(VisibleAnywhere, Category = Stat, Meta = (AllowPrivateAccess = true))
 	int32 Level;
@@ -76,6 +76,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = Stat, Meta = (AllowPrivateAccess = true))
 	int32 MaxMp;
+
+	//UPROPERTY(VisibleAnywhere, Category = Path, Meta = (AllowPrivateAccess = true))
+	//FString Path;
 
 	//변화 데이터
 	UPROPERTY(VisibleAnywhere, Category = Stat, Meta = (AllowPrivateAccess = true))

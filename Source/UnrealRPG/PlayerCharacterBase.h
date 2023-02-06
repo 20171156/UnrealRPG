@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "CustomEnum.h"
 #include "PlayerCharacterBase.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FPlayerOnAttackEnd);
+//DECLARE_MULTICAST_DELEGATE(FPlayerOnAttackEnd);
 
 UCLASS()
 class UNREALRPG_API APlayerCharacterBase : public ACharacter
@@ -22,41 +23,37 @@ protected:
 
 public:	
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	
+	UFUNCTION()
+	void CharacterDestroy();
 
-	void IsAttacking(bool bIsAttacking_)
-	{
-		if (bIsAttacking_)
-		{
-			bIsOverlapped = false;
-		}
-		bIsAttacking = bIsAttacking_;
-	}
-	void IsAttacked(bool bIsAttacked_) { bIsAttacked = bIsAttacked_; }
+public:
+	UFUNCTION()
+	void ChangeCollisionProfile(bool bAbleOverlap);
 
-	bool GetAttacking() { return bIsAttacking; }
-	bool GetAttacked() { return bIsAttacked; }
+	UFUNCTION()
+	void OnWeaponOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnWeaponOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void ExecuteAnimMontage(const EPlayerAnimState AnimState);
+
+	UFUNCTION()
+	void OnAnimMontageStarted(UAnimMontage* Montage);
+
+	UFUNCTION()
+	void OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+private:
+	UFUNCTION()
+	void PlayerHpZero();
 
 public:
 	//Delgate variable
-	FPlayerOnAttackEnd OnPlayerAttackEnd;
-
-public:
-	UFUNCTION()
-	void ChangeCollisionProfile();
-
-	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-	UFUNCTION()
-	void PrimaryAttack();
-
-	UFUNCTION()
-	void OnPrimaryAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	//FPlayerOnAttackEnd OnPlayerAttackEnd;
 
 private:
 	UPROPERTY()
@@ -81,24 +78,8 @@ private:
 	bool bIsAttacked = false;
 
 	UPROPERTY()
-	bool bIsOverlapped = false;
-
-	UPROPERTY()
-	bool bIsDeath = false;
-
-	UPROPERTY()
-	bool bIsPlayAnimation = false;
-
-	UPROPERTY()
-	int32 AttackIndex = 0;
+	bool bIsDead = false;
 
 	UPROPERTY()
 	int32 TestAttackCount = 0;
-
-	//충돌체크 변수 임시저장
-	UPROPERTY()
-	AActor* OverlapActor;
-
-	UPROPERTY()
-	UPrimitiveComponent* OverlapComp;
 };

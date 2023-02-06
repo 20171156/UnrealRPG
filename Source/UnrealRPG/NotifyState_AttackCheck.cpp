@@ -17,18 +17,16 @@ void UNotifyState_AttackCheck::NotifyBegin(USkeletalMeshComponent* MeshComp, UAn
 		if (MeshComp->GetOwner()->ActorHasTag(FName(TEXT("Player"))))
 		{
 			APlayerCharacterBase* MeshOwner = Cast<APlayerCharacterBase>(MeshComp->GetOwner());
-			MeshOwner->IsAttacking(true);//이 때만 데미지 입기 가능
-			MeshOwner->ChangeCollisionProfile();
+			MeshOwner->ChangeCollisionProfile(true);
 		}
 		else if (MeshComp->GetOwner()->ActorHasTag(FName(TEXT("Monster"))))
 		{
 			AMonsterCharacterBase* MeshOwner = Cast<AMonsterCharacterBase>(MeshComp->GetOwner());
-			MeshOwner->IsAttacking(true);
-			MeshOwner->ChangeCollisionProfile();
+			MeshOwner->ChangeCollisionProfile(true);
 		}
 		else
 		{
-			//No Tag is Error or Editor Tab
+			return;//No Tag is Error
 		}
 	}
 }
@@ -126,18 +124,16 @@ void UNotifyState_AttackCheck::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnim
 		if (MeshComp->GetOwner()->ActorHasTag(FName(TEXT("Player"))))
 		{
 			APlayerCharacterBase* MeshOwner = Cast<APlayerCharacterBase>(MeshComp->GetOwner());
-			MeshOwner->IsAttacking(false);
-			MeshOwner->ChangeCollisionProfile();
+			MeshOwner->ChangeCollisionProfile(false);
 		}
 		else if (MeshComp->GetOwner()->ActorHasTag(FName(TEXT("Monster"))))
 		{
 			AMonsterCharacterBase* MeshOwner = Cast<AMonsterCharacterBase>(MeshComp->GetOwner());
-			MeshOwner->IsAttacking(false);
-			MeshOwner->ChangeCollisionProfile();
+			MeshOwner->ChangeCollisionProfile(false);
 		}
 		else
 		{
-			//No Tag is Error or Editor Tab
+			return;//No Tag is Error
 		}
 	}
 }
