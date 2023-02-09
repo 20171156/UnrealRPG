@@ -42,6 +42,15 @@ private:
 	UFUNCTION()
 	void AnimNotify_MonsterIsDead();
 
+	UFUNCTION()
+	void AnimNotify_FireProjectile();
+
+	UFUNCTION()
+	void AnimNotify_SpawnArrow();
+
+	UFUNCTION()
+	void AnimNotify_FireArrow();
+
 public:
 	FOnWeaponAnimChange OnWeaponAnimChange;
 	FOnWeaponAnimStop OnWeaponAnimStop;

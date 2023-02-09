@@ -4,7 +4,9 @@
 #include "UnrealRPGGameModeBase.h"
 #include "PlayerCharacterBase.h"
 #include "PlayableController.h"
-#include "Blueprint/UserWidget.h"
+//#include "Blueprint/UserWidget.h"
+#include "PlayerMainWidget.h"
+#include "Runtime/Engine/Public/EngineUtils.h"
 
 AUnrealRPGGameModeBase::AUnrealRPGGameModeBase()
 {
@@ -24,31 +26,25 @@ void AUnrealRPGGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (Widget)
+	if (PlayerMainWidgetClass)
 	{
-		Menu = CreateWidget<UUserWidget>(GetWorld(), Widget);
+		PlayerMainWidget = CreateWidget<UPlayerMainWidget>(GetWorld(), PlayerMainWidgetClass);
+	}
+
+	PlayerMainWidget->AddToViewport();
+
+	UWorld* world = GetWorld();
+	for (const auto& Player : TActorRange<APlayerCharacterBase>(world))
+	{
+		if (IsValid(Player))
+		{
+			PlayerMainWidget->BindWidget(Player->GetStatComponent());
+			break;
+		}
 	}
 }
 
 void AUnrealRPGGameModeBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-}
-
-void AUnrealRPGGameModeBase::OnUI()
-{
-	if (Menu)
-	{
-		Menu->AddToViewport();
-		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
-	}
-}
-
-void AUnrealRPGGameModeBase::OffUI()
-{
-	if (Menu)
-	{
-		Menu->RemoveFromViewport();
-		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
-	}
 }

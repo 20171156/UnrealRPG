@@ -20,17 +20,11 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	UFUNCTION()
-	void OnUI();
-	
-	UFUNCTION()
-	void OffUI();
-
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UUserWidget> Widget;
+	TSubclassOf<class UPlayerMainWidget> PlayerMainWidgetClass;
 
 private:
 	UPROPERTY()
-	UUserWidget* Menu;
+	UPlayerMainWidget* PlayerMainWidget;
 };

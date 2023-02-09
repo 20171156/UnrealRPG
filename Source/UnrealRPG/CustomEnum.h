@@ -30,3 +30,14 @@ enum class EPlayerAnimState : uint8
 	ATTACKED		UMETA(DisplayName = "ATTACKED"),//외부 이벤트 타입
 	DEAD			UMETA(DisplayName = "DEAD"),
 };
+
+UENUM(BlueprintType)
+enum class ECharacterStatType : uint8
+{
+	LEVEL			UMETA(DisplayName = "LEVEL"),
+	HP				UMETA(DisplayName = "HP"),
+	SP				UMETA(DisplayName = "SP"),
+	MP				UMETA(DisplayName = "MP"),
+	ATK				UMETA(DisplayName = "ATK"),
+	EXP				UMETA(DisplayName = "EXP"),
+};

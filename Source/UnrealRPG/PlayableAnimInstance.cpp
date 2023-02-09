@@ -67,3 +67,9 @@ void UPlayableAnimInstance::JumpToSection(const UAnimMontage* Montage)
 
 	CurrentSectionIndex = (CurrentSectionIndex + 1) % AllSectionIndex;
 }
+
+void UPlayableAnimInstance::AnimNotify_PlayerIsDead()
+{
+	auto Pawn = TryGetPawnOwner();
+	Cast<APlayerCharacterBase>(Pawn)->CharacterDestroy();
+}

@@ -36,6 +36,8 @@ public:
 
 	const EMonsterAnimState& GetCurrentAnimState() { return CurrentAnimState; }
 	const EMonsterAnimState& GetPreviousAnimState() { return PreviousAnimState; }
+	
+	const int32 GetCurrentStat(ECharacterStatType StatType);
 
 	UFUNCTION()
 	void CharacterDestroy();

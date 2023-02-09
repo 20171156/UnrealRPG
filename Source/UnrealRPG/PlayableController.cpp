@@ -44,12 +44,24 @@ void APlayableController::SetupInputComponent()
 
 void APlayableController::Jump()
 {
-	Cast<APlayerCharacterBase>(GetCharacter())->Jump();
+	if (IsValid(GetCharacter()))
+	{
+		if (!Cast<APlayerCharacterBase>(GetCharacter())->GetDead())
+		{
+			Cast<APlayerCharacterBase>(GetCharacter())->Jump();
+		}
+	}
 }
 
 void APlayableController::PrimaryAttack()
 {
-	Cast<APlayerCharacterBase>(GetCharacter())->ExecuteAnimMontage(EPlayerAnimState::ATTACKING);
+	if (IsValid(GetCharacter()))
+	{
+		if (!Cast<APlayerCharacterBase>(GetCharacter())->GetDead())
+		{
+			Cast<APlayerCharacterBase>(GetCharacter())->ExecuteAnimMontage(EPlayerAnimState::ATTACKING);
+		}
+	}
 }
 
 void APlayableController::ZoomIn()
@@ -71,53 +83,77 @@ void APlayableController::ChangeMenu()
 	{
 		if (IsVisibleUI)
 		{
-			GameMode->OnUI();
+			//GameMode->OnUI();
 		}
 		else
 		{
-			GameMode->OffUI();
+			//GameMode->OffUI();
 		}
 	}
 }
 
 void APlayableController::MoveUpDown(float Value)
 {
-	UpDownValue = Value;
-
-	APawn* const MyPawn = GetPawn();
-	if (MyPawn && Value != 0.f)
+	if (IsValid(GetCharacter()))
 	{
-		FRotator Rot = GetControlRotation();
-		FVector Dir = FRotationMatrix(Rot).GetScaledAxis(EAxis::X);
-		MyPawn->AddMovementInput(Dir, Value);
+		if (!Cast<APlayerCharacterBase>(GetCharacter())->GetDead())
+		{
+			UpDownValue = Value;
+
+			APawn* const MyPawn = GetPawn();
+			if (MyPawn && Value != 0.f)
+			{
+				FRotator Rot = GetControlRotation();
+				FVector Dir = FRotationMatrix(Rot).GetScaledAxis(EAxis::X);
+				MyPawn->AddMovementInput(Dir, Value);
+			}
+		}
 	}
 }
 
 void APlayableController::MoveLeftRight(float Value)
 {
-	LeftRightValue = Value;
-
-	APawn* const MyPawn = GetPawn();
-	if (MyPawn && Value != 0.f)
+	if (IsValid(GetCharacter()))
 	{
-		FRotator Rot = GetControlRotation();
-		FVector Dir = FRotationMatrix(Rot).GetScaledAxis(EAxis::Y);
-		MyPawn->AddMovementInput(Dir, Value);
+		if (!Cast<APlayerCharacterBase>(GetCharacter())->GetDead())
+		{
+			LeftRightValue = Value;
+
+			APawn* const MyPawn = GetPawn();
+			if (MyPawn && Value != 0.f)
+			{
+				FRotator Rot = GetControlRotation();
+				FVector Dir = FRotationMatrix(Rot).GetScaledAxis(EAxis::Y);
+				MyPawn->AddMovementInput(Dir, Value);
+			}
+		}
 	}
 }
 
 void APlayableController::Yaw(float Value)
 {
-	if (Value != 0.f)
+	if (IsValid(GetCharacter()))
 	{
-		AddYawInput(Value);
+		if (!Cast<APlayerCharacterBase>(GetCharacter())->GetDead())
+		{
+			if (Value != 0.f)
+			{
+				AddYawInput(Value);
+			}
+		}
 	}
 }
 
 void APlayableController::Pitch(float Value)
 {
-	if (Value != 0.f)
+	if (IsValid(GetCharacter()))
 	{
-		AddPitchInput(Value);
+		if (!Cast<APlayerCharacterBase>(GetCharacter())->GetDead())
+		{
+			if (Value != 0.f)
+			{
+				AddPitchInput(Value);
+			}
+		}
 	}
 }

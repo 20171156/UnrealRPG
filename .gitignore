@@ -74,7 +74,6 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 # Some contents not include
-Content/MercenaryWarrior/*
 Content/ParagonAurora/*
-Content/Realistic_Starter_VFX_Pack_Vol2/*
+Content/FXVarietyPack/*
 Content/SkeletonArmy/*

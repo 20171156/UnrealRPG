@@ -12,7 +12,7 @@
 ABaseLevelActor::ABaseLevelActor()
 {
 	//PrimaryActorTick.bCanEverTick = true;
-
+	
 	SpawnMonsterNum = 2;
 }
 
@@ -35,14 +35,6 @@ void ABaseLevelActor::BeginPlay()
 	}
 
 	SpawnMonster();
-
-	//if (0 != SpawnMonsterArray.Num())
-	//{
-	//	for (const auto& SpawnedMonster : SpawnMonsterArray)
-	//	{
-	//		Cast<AMonsterCharacterBase>(SpawnedMonster)->OnDestroyed.AddDynamic(this, &ABaseLevelActor::MonsterIsDead);
-	//	}
-	//}
 }
 
 void ABaseLevelActor::MonsterIsDead(AActor* DestroyedActor)
@@ -77,7 +69,7 @@ void ABaseLevelActor::SpawnMonster()
 			int32 SpawnLocationNum = FMath::RandRange(0, SpawnPointArray.Num() - 1);
 
 			FActorSpawnParameters SpawnParams;
-			FRotator Rotator;
+			FRotator Rotator = FRotator::ZeroRotator;
 			FVector SpawnLocation;
 			SpawnParams.Owner = this;
 

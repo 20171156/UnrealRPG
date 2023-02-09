@@ -21,12 +21,17 @@ protected:
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	virtual void Tick(float DeltaTime) override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-	
+
 	UFUNCTION()
 	void CharacterDestroy();
+
+	UFUNCTION()
+	class UStatComponent* GetStatComponent() { return CurrentStat; }
+
+	bool GetDead() { return bIsDead; }
 
 public:
 	UFUNCTION()

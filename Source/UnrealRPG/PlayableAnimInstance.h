@@ -28,6 +28,9 @@ public:
 private:
 	void JumpToSection(const UAnimMontage* Montage);
 
+	UFUNCTION()
+	void AnimNotify_PlayerIsDead();
+
 private:
 	UPROPERTY()
 	int32 CurrentSectionIndex = 0;

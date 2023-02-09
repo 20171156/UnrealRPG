@@ -3,6 +3,7 @@
 
 #include "MonsterAnimInstance.h"
 #include "MonsterCharacterBase.h"
+#include "SkeletonCharacterBase.h"
 #include "GameFramework/PawnMovementComponent.h"
 
 UMonsterAnimInstance::UMonsterAnimInstance()
@@ -86,4 +87,22 @@ void UMonsterAnimInstance::AnimNotify_MonsterIsDead()
 {
 	auto Pawn = TryGetPawnOwner();
 	Cast<AMonsterCharacterBase>(Pawn)->CharacterDestroy();
+}
+
+void UMonsterAnimInstance::AnimNotify_FireProjectile()
+{
+	auto Pawn = TryGetPawnOwner();
+	Cast<ASkeletonCharacterBase>(Pawn)->FireMagic();
+}
+
+void UMonsterAnimInstance::AnimNotify_SpawnArrow()
+{
+	auto Pawn = TryGetPawnOwner();
+	Cast<ASkeletonCharacterBase>(Pawn)->SpawnArrow();
+}
+
+void UMonsterAnimInstance::AnimNotify_FireArrow()
+{
+	auto Pawn = TryGetPawnOwner();
+	Cast<ASkeletonCharacterBase>(Pawn)->FireArrow();
 }

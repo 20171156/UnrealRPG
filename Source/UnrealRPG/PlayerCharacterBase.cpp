@@ -94,13 +94,14 @@ float APlayerCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& D
 
 void APlayerCharacterBase::CharacterDestroy()
 {
-	FTimerHandle DestroyHandle;
-	float WaitTime = 1.5f;
-	GetWorld()->GetTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([&]()
-		{
-			Destroy();
-			GetWorldTimerManager().ClearTimer(DestroyHandle);
-		}), WaitTime, false);
+	Destroy();
+	//FTimerHandle DestroyHandle;
+	//float WaitTime = 1.5f;
+	//GetWorld()->GetTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([&]()
+	//	{
+	//		Destroy();
+	//		GetWorldTimerManager().ClearTimer(DestroyHandle);
+	//	}), WaitTime, false);
 }
 
 void APlayerCharacterBase::ChangeCollisionProfile(bool bAbleOverlap)
@@ -133,6 +134,12 @@ void APlayerCharacterBase::OnWeaponOverlapBegin(UPrimitiveComponent* OverlappedC
 			OtherActor->TakeDamage(CurrentStat->GetAtk(), DamageEvent, GetController(), this);
 			bIsAttacking = true;
 			
+			auto Monster = Cast<AMonsterCharacterBase>(OtherActor);
+			if (Monster->GetDead())
+			{
+				CurrentStat->SetCurrentExp(Monster->GetCurrentStat(ECharacterStatType::EXP));
+			}
+
 			++TestAttackCount;
 			//UE_LOG(LogTemp, Log, TEXT("[HitActor : %s] [HiComponent : %s] Attack : %d!"), *OtherActor->GetName(), *OtherComp->GetName(), TestAttackCount);
 		}
@@ -154,33 +161,37 @@ void APlayerCharacterBase::OnWeaponOverlapEnd(UPrimitiveComponent* OverlappedCom
 
 void APlayerCharacterBase::ExecuteAnimMontage(const EPlayerAnimState AnimState)
 {
-	switch (AnimState)
+	if (!bIsDead)
 	{
-	case EPlayerAnimState::PEACE:
-	{
-		break;
-	}
-	case EPlayerAnimState::CHASE:
-	{
-		break;
-	}
-	case EPlayerAnimState::ATTACKING:
-	{
-		PlayerAnimInstance->PlayPrimaryAttackMontage();
-		break;
-	}
-	case EPlayerAnimState::ATTACKED:
-	{
-		PlayerAnimInstance->PlayAttackedMontage();
-		break;
-	}
-	case EPlayerAnimState::DEAD:
-	{
-		PlayerAnimInstance->PlayDyingMontage();
-		break;
-	}
-	default:
-		break;
+		switch (AnimState)
+		{
+		case EPlayerAnimState::PEACE:
+		{
+			break;
+		}
+		case EPlayerAnimState::CHASE:
+		{
+			break;
+		}
+		case EPlayerAnimState::ATTACKING:
+		{
+			PlayerAnimInstance->PlayPrimaryAttackMontage();
+			break;
+		}
+		case EPlayerAnimState::ATTACKED:
+		{
+			PlayerAnimInstance->PlayAttackedMontage();
+			break;
+		}
+		case EPlayerAnimState::DEAD:
+		{
+			PlayerAnimInstance->PlayDyingMontage();
+			break;
+		}
+		default:
+			break;
+		}
+
 	}
 }
 
@@ -200,17 +211,17 @@ void APlayerCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInter
 	}
 	else
 	{
-		if (MontageName.Contains(FString(TEXT("Dying"))))
+		/*if (MontageName.Contains(FString(TEXT("Dying"))))
 		{
 			Destroy();
-		}
+		}*/
 	}
 }
 
 void APlayerCharacterBase::PlayerHpZero()
 {
-	bIsDead = true;
 	ExecuteAnimMontage(EPlayerAnimState::DEAD);
+	bIsDead = true;
 
 	//나머지 weapon들도 다 없애버려야할듯
 	GetMesh()->SetCollisionProfileName("NoCollision");

@@ -12,7 +12,6 @@ UStatComponent::UStatComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
-
 	// ...
 }
 
@@ -65,6 +64,8 @@ void UStatComponent::SetCurrentHp(const int32& NewHp)
 		CurrentHp = 0;
 		PlayerHpZero.Broadcast();
 	}
+
+	PlayerHpChanged.Broadcast();
 }
 
 void UStatComponent::SetCurrentSp(const int32& NewStamina)
@@ -75,6 +76,8 @@ void UStatComponent::SetCurrentSp(const int32& NewStamina)
 	{
 		CurrentSp = 0;
 	}
+
+	PlayerSpChanged.Broadcast();
 }
 
 void UStatComponent::SetCurrentMp(const int32& NewMana)
@@ -85,11 +88,13 @@ void UStatComponent::SetCurrentMp(const int32& NewMana)
 	{
 		CurrentMp = 0;
 	}
+
+	PlayerMpChanged.Broadcast();
 }
 
 void UStatComponent::SetCurrentExp(const int32& NewExperience)
 {
-	CurrentExp = NewExperience;
+	CurrentExp += NewExperience;
 
 	if (CurrentExp <= 0)
 	{
@@ -100,7 +105,11 @@ void UStatComponent::SetCurrentExp(const int32& NewExperience)
 	{
 		CurrentExp -= MaxExp;
 		SetLevel(++Level);//오로지 레벨1만 오를때 처리가능
+
+		PlayerLevelChanged.Broadcast();
 	}
+
+	PlayerExpChanged.Broadcast();
 }
 
 void UStatComponent::OnAttacked(const int32& DamageAmount)

@@ -25,17 +25,19 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION()
+	void SpawnArrow();
+
+	UFUNCTION()
+	void FireMagic();
+
+	UFUNCTION()
+	void FireArrow();
+
 private:
-	//UPROPERTY()
-	//FName LeftWeaponSocket = TEXT("WeaponLeft_Socket");
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class AProjectile> ProjectileClass;
 
-	//UPROPERTY()
-	//FName RightWeaponSocket = TEXT("WeaponRight_Socket");
-
-	//UPROPERTY()
-	//FName ShieldWeaponSocket = TEXT("Shield_Socket");
-
-	//UPROPERTY()
-	//FName BackWeaponSocket = TEXT("WeaponBack_Socket");
-
+	UPROPERTY()
+	class AProjectile* Projectile;
 };

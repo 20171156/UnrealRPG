@@ -147,6 +147,44 @@ void AMonsterCharacterBase::SetState(const EMonsterAnimState NewState)
 	CurrentAnimState = NewState;
 }
 
+const int32 AMonsterCharacterBase::GetCurrentStat(ECharacterStatType StatType)
+{
+	switch (StatType)
+	{
+	case ECharacterStatType::LEVEL:
+	{
+		return CurrentStat->GetLevel();
+	}
+	case ECharacterStatType::HP:
+	{
+		return CurrentStat->GetHp();
+	}
+	case ECharacterStatType::SP:
+	{
+		return CurrentStat->GetSp();
+	}
+	case ECharacterStatType::MP:
+	{
+		return CurrentStat->GetMp();
+	}
+	case ECharacterStatType::ATK:
+	{
+		return CurrentStat->GetAtk();
+	}
+	case ECharacterStatType::EXP:
+	{
+		return CurrentStat->GetExp();
+	}
+	default:
+	{
+
+		break;
+	}
+	}
+
+	return 0;
+}
+
 void AMonsterCharacterBase::ChangeCollisionProfile(bool bAbleOverlap)
 {
 	if (bAbleOverlap)
@@ -275,11 +313,13 @@ void AMonsterCharacterBase::StopWeaponAnimation()
 void AMonsterCharacterBase::MonsterHpZero()
 {
 	SetState(EMonsterAnimState::DEAD);
+	ExecuteAnimMontage(EMonsterAnimState::DEAD);
 	bIsDead = true;
 
-	ExecuteAnimMontage(EMonsterAnimState::DEAD);
-
 	GetMesh()->SetCollisionProfileName("NoCollision");
+
+	////경험치 추가
+	//CurrentStat->GetExp();
 }
 
 void AMonsterCharacterBase::CharacterDestroy()

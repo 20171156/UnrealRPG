@@ -7,6 +7,7 @@
 #include "CustomStruct.h"
 #include "StatComponent.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FPlayerLevelChanged);
 DECLARE_MULTICAST_DELEGATE(FPlayerHpChanged);
 DECLARE_MULTICAST_DELEGATE(FPlayerMpChanged);
 DECLARE_MULTICAST_DELEGATE(FPlayerSpChanged);
@@ -49,17 +50,19 @@ public:
 	const float GetMpRatio() { return CurrentMp / (float)MaxMp; }
 	const float GetExpRatio() { return CurrentExp / (float)MaxExp; }
 
+	void SetCurrentExp(const int32& NewExperience);
+
 private:
 	void SetName(const FString& NewName);
 	void SetCurrentHp(const int32& NewHp);
 	void SetCurrentSp(const int32& NewStamina);
 	void SetCurrentMp(const int32& NewMana);
-	void SetCurrentExp(const int32& NewExperience);
 
 public:
 	void OnAttacked(const int32& DamageAmount);
 
 public:
+	FPlayerLevelChanged PlayerLevelChanged;
 	FPlayerHpChanged PlayerHpChanged;
 	FPlayerMpChanged PlayerMpChanged;
 	FPlayerSpChanged PlayerSpChanged;
