@@ -57,7 +57,7 @@ void UStatComponent::SetName(const FString& NewName)
 
 void UStatComponent::SetCurrentHp(const int32& NewHp)
 {
-	CurrentHp = NewHp;
+	CurrentHp += NewHp;
 
 	if (CurrentHp <= 0)
 	{
@@ -70,7 +70,7 @@ void UStatComponent::SetCurrentHp(const int32& NewHp)
 
 void UStatComponent::SetCurrentSp(const int32& NewStamina)
 {
-	CurrentSp = NewStamina;
+	CurrentSp += NewStamina;
 
 	if (CurrentSp <= 0)
 	{
@@ -82,7 +82,7 @@ void UStatComponent::SetCurrentSp(const int32& NewStamina)
 
 void UStatComponent::SetCurrentMp(const int32& NewMana)
 {
-	CurrentMp = NewMana;
+	CurrentMp += NewMana;
 
 	if (CurrentMp <= 0)
 	{
@@ -114,5 +114,6 @@ void UStatComponent::SetCurrentExp(const int32& NewExperience)
 
 void UStatComponent::OnAttacked(const int32& DamageAmount)
 {
-	SetCurrentHp(CurrentHp - DamageAmount);
+	//SetCurrentHp(CurrentHp - DamageAmount);
+	SetCurrentHp(-DamageAmount);
 }

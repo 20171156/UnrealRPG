@@ -47,6 +47,12 @@ public:
 	UFUNCTION()
 	void Pitch(float Value);
 
+	UFUNCTION()
+	void UseItem1();
+
+	UFUNCTION()
+	void UseItem2();
+
 public:
 	UPROPERTY()
 	float UpDownValue = 0.f;

@@ -22,12 +22,16 @@ void APlayableController::SetupInputComponent()
 	PlayerInput->AddActionMapping(FInputActionKeyMapping(("Menu"), EKeys::M));
 	PlayerInput->AddActionMapping(FInputActionKeyMapping(("ZoomIn"), EKeys::MouseScrollUp));
 	PlayerInput->AddActionMapping(FInputActionKeyMapping(("ZoomOut"), EKeys::MouseScrollDown));
+	PlayerInput->AddActionMapping(FInputActionKeyMapping(("UseItem1"), EKeys::One));
+	PlayerInput->AddActionMapping(FInputActionKeyMapping(("UseItem2"), EKeys::Two));
 	
 	InputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &APlayableController::Jump);
 	InputComponent->BindAction(TEXT("Attack"), EInputEvent::IE_Pressed, this, &APlayableController::PrimaryAttack);
 	InputComponent->BindAction(TEXT("Menu"), EInputEvent::IE_Pressed, this, &APlayableController::ChangeMenu);
 	InputComponent->BindAction(TEXT("ZoomIn"), EInputEvent::IE_Pressed, this, &APlayableController::ZoomIn);
 	InputComponent->BindAction(TEXT("ZoomOut"), EInputEvent::IE_Pressed, this, &APlayableController::ZoomOut);
+	InputComponent->BindAction(TEXT("UseItem1"), EInputEvent::IE_Pressed, this, &APlayableController::UseItem1);
+	InputComponent->BindAction(TEXT("UseItem2"), EInputEvent::IE_Pressed, this, &APlayableController::UseItem2);
 	
 	PlayerInput->AddAxisMapping(FInputAxisKeyMapping(("UpDown"), EKeys::W, 1.f));
 	PlayerInput->AddAxisMapping(FInputAxisKeyMapping(("UpDown"), EKeys::S, -1.f));
@@ -155,5 +159,21 @@ void APlayableController::Pitch(float Value)
 				AddPitchInput(Value);
 			}
 		}
+	}
+}
+
+void APlayableController::UseItem1()
+{
+	if (IsValid(GetCharacter()))
+	{
+		Cast<APlayerCharacterBase>(GetCharacter())->UsePotion(ECharacterStatType::HP);
+	}
+}
+
+void APlayableController::UseItem2()
+{
+	if (IsValid(GetCharacter()))
+	{
+		Cast<APlayerCharacterBase>(GetCharacter())->UsePotion(ECharacterStatType::MP);
 	}
 }

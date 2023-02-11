@@ -28,9 +28,12 @@ private:
 	UFUNCTION()
 	void SpawnMonster();
 
+	UFUNCTION()
+	void SpawnPotion(AActor* DestroyedActor);
+
 private:
 	TArray<class AMonsterCharacterBase*> SpawnMonsterArray;
-	TArray<class ATargetPoint*> SpawnPointArray;
+	TArray<class AMonsterSpawnPoint*> SpawnPointArray;
 
 	int32 SpawnMonsterNum;
 };

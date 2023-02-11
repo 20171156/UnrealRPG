@@ -24,7 +24,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UPlayerMainWidget> PlayerMainWidgetClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UInventoryWidget> InventoryWidgetClass;
+
 private:
 	UPROPERTY()
 	UPlayerMainWidget* PlayerMainWidget;
+
+	UPROPERTY()
+	UInventoryWidget* InventoryWidget;
 };

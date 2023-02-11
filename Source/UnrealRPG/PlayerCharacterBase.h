@@ -30,6 +30,7 @@ public:
 
 	UFUNCTION()
 	class UStatComponent* GetStatComponent() { return CurrentStat; }
+	class UInventory* GetInventory() { return Inventory; }
 
 	bool GetDead() { return bIsDead; }
 
@@ -52,6 +53,12 @@ public:
 	UFUNCTION()
 	void OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	UFUNCTION()
+	void AddPotion(ECharacterStatType PotionType);
+
+	UFUNCTION()
+	void UsePotion(ECharacterStatType PotionType);
+
 private:
 	UFUNCTION()
 	void PlayerHpZero();
@@ -61,10 +68,10 @@ public:
 	//FPlayerOnAttackEnd OnPlayerAttackEnd;
 
 private:
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	class USpringArmComponent* SpringArm;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	class UCameraComponent* Camera;
 
 	UPROPERTY()
@@ -75,6 +82,9 @@ private:
 
 	UPROPERTY()
 	class UCapsuleComponent* WeaponCollisionComponent;
+
+	UPROPERTY()
+	class UInventory* Inventory;
 
 	UPROPERTY()
 	bool bIsAttacking = false;

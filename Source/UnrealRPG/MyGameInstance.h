@@ -21,7 +21,10 @@ public:
 
 	FPlayerStatData* GetPlayerData(const int32& Level);
 	FMonsterStatData* GetMonsterData(const FName& MonsterName);
+	FPlayerStatData* GetPotionData(const FName& PotionName);
+	
 	TArray<FMonsterStatData*> GetMonsterAllData();
+	TArray<FPlayerStatData*> GetPotionAllData();
 
 private:
 	UPROPERTY()
@@ -30,5 +33,6 @@ private:
 	UPROPERTY()
 	class UDataTable* MonsterStat;
 
-	
+	UPROPERTY()
+	class UDataTable* PotionStat;
 };

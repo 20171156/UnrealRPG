@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "StatComponent.h"
+#include "Inventory.h"
 #include "MonsterCharacterBase.h"
 #include "PlayableAnimInstance.h"
 #include "DrawDebugHelpers.h"//디버깅용 코드
@@ -28,6 +29,10 @@ APlayerCharacterBase::APlayerCharacterBase()
 
 	SpringArm->SetupAttachment(GetCapsuleComponent());
 	Camera->SetupAttachment(SpringArm);
+
+	//캐릭터 생성할 때 인벤토리 시스템 생성
+	Inventory = CreateDefaultSubobject<UInventory>(TEXT("INVENTORY"));
+	Inventory->InitInventory();
 }
 
 void APlayerCharacterBase::PostInitializeComponents()
@@ -216,6 +221,18 @@ void APlayerCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInter
 			Destroy();
 		}*/
 	}
+}
+
+void APlayerCharacterBase::AddPotion(ECharacterStatType PotionType)
+{
+	Inventory->AddPotion(PotionType);
+}
+
+void APlayerCharacterBase::UsePotion(ECharacterStatType PotionType)
+{
+	Inventory->UsePotion(PotionType);
+
+	CurrentStat->SetCurrentHp(10);//추후 수정할 것, 값 강제로 넣고있음
 }
 
 void APlayerCharacterBase::PlayerHpZero()

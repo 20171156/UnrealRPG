@@ -4,8 +4,8 @@
 #include "UnrealRPGGameModeBase.h"
 #include "PlayerCharacterBase.h"
 #include "PlayableController.h"
-//#include "Blueprint/UserWidget.h"
 #include "PlayerMainWidget.h"
+#include "InventoryWidget.h"
 #include "Runtime/Engine/Public/EngineUtils.h"
 
 AUnrealRPGGameModeBase::AUnrealRPGGameModeBase()
@@ -29,9 +29,15 @@ void AUnrealRPGGameModeBase::BeginPlay()
 	if (PlayerMainWidgetClass)
 	{
 		PlayerMainWidget = CreateWidget<UPlayerMainWidget>(GetWorld(), PlayerMainWidgetClass);
+		PlayerMainWidget->AddToViewport();
 	}
 
-	PlayerMainWidget->AddToViewport();
+	if (InventoryWidgetClass)
+	{
+		InventoryWidget = CreateWidget<UInventoryWidget>(GetWorld(), InventoryWidgetClass);
+		InventoryWidget->AddToViewport();
+	}
+
 
 	UWorld* world = GetWorld();
 	for (const auto& Player : TActorRange<APlayerCharacterBase>(world))
@@ -39,6 +45,8 @@ void AUnrealRPGGameModeBase::BeginPlay()
 		if (IsValid(Player))
 		{
 			PlayerMainWidget->BindWidget(Player->GetStatComponent());
+			InventoryWidget->BindWidget(Player->GetInventory());
+
 			break;
 		}
 	}
