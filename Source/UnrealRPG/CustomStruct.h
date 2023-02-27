@@ -108,6 +108,9 @@ struct FQuestData : public FTableRowBase
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString QuestNPCName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString QuestDialog;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

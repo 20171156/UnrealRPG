@@ -12,6 +12,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FRemoveItem, class UInventoryItem*);
 DECLARE_MULTICAST_DELEGATE_OneParam(FCountCheckItem, class UInventoryItem*);
 DECLARE_MULTICAST_DELEGATE(FChangeHPPotion);
 DECLARE_MULTICAST_DELEGATE(FChangeMPPotion);
+DECLARE_MULTICAST_DELEGATE(FAddQuestItem);
 
 /**
  * 인벤토리 위젯과 연동될 인벤토리 아이템을 가짐
@@ -28,10 +29,10 @@ public:
 	void InitializeInventory();
 
 	UFUNCTION()
-	void AddItem(FName ItemName);
+	void AddItem(FName ItemName, bool IsQuestItem = false);
 
 	UFUNCTION()
-	bool UseItem(FName ItemName, FItemData& ResultItemData);
+	bool UseItem(FName ItemName, FItemData& ResultItemData, bool IsQuestItem = false);
 
 	UFUNCTION()
 	int32 GetItemCount(FName ItemName);
@@ -46,6 +47,7 @@ public:
 	FCountCheckItem OnCountCheckItem;
 	FChangeHPPotion ChangeHPPotion;
 	FChangeMPPotion ChangeMPPotion;
+	FAddQuestItem OnAddQuestItem;
 
 private:
 	TMap<FName, class UInventoryItem*> InventoryItemMap;

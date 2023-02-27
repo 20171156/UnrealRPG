@@ -97,7 +97,7 @@ void AUnrealRPGGameModeBase::CloseInventory()
 	InventoryWidget->RemoveFromViewport();
 }
 
-void AUnrealRPGGameModeBase::OpenDialogWidget(ACharacter* NPC)
+void AUnrealRPGGameModeBase::OpenDialogWidget(FString NPCName, TArray<FString> NPCDialogArray)
 {
 	PlayerMainWidget->RemoveFromViewport();
 	InventoryWidget->RemoveFromViewport();
@@ -105,7 +105,7 @@ void AUnrealRPGGameModeBase::OpenDialogWidget(ACharacter* NPC)
 	if (!NPCDialogWidget->IsVisible())
 	{
 		NPCDialogWidget->AddToViewport();
-		NPCDialogWidget->BindWidget(NPC);
+		NPCDialogWidget->BindWidget(NPCName, NPCDialogArray);
 	}
 
 	IsOpenDialogWidget = true;
@@ -118,7 +118,7 @@ void AUnrealRPGGameModeBase::UpdateDialogWidget()
 	NPCDialogWidget->UpdateDialog();
 }
 
-void AUnrealRPGGameModeBase::CloseDialogWidget(const FQuestData& QuestData)
+void AUnrealRPGGameModeBase::CloseDialogWidget()
 {
 	if (!PlayerMainWidget->IsVisible())
 	{
@@ -130,43 +130,9 @@ void AUnrealRPGGameModeBase::CloseDialogWidget(const FQuestData& QuestData)
 	IsOpenDialogWidget = false;
 
 	UpdatePlayerInteracting();
-
-	UWorld* world = GetWorld();
-	for (const auto& Player : TActorRange<APlayerCharacterBase>(world))
-	{
-		if (IsValid(Player))
-		{
-			Player->SetQuestData(QuestData);
-			Player->SetQuestState(EPlayerQuestState::ACCEPTED);
-			
-			//EPlayerQuestState State = Player->GetQuestState();
-			//switch (State)
-			//{
-			//case EPlayerQuestState::EMPTY:
-			//{
-			//	Player->SetQuestData(QuestData);
-			//	Player->SetQuestState(EPlayerQuestState::ACCEPTED);
-			//	break;
-			//}
-			//case EPlayerQuestState::ACCEPTED:
-			//{
-			//	break;
-			//}
-			//case EPlayerQuestState::COMPLETE:
-			//{
-			//	break;
-			//}
-			//default:
-			//{
-			//	break;
-			//}
-			//}
-
-			break;
-		}
-	}
 }
 
+//플레이어가 인터랙팅 중에는 키입력을 막아야 함
 void AUnrealRPGGameModeBase::UpdatePlayerInteracting()
 {
 	UWorld* world = GetWorld();

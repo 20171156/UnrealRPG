@@ -22,14 +22,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	const TArray<FString>& GetNPCDialog() { return NPCDialogArray; }
-	const FQuestData& GetQuestData() { return CombineQuest; }
-
-	void ResetDialogData();
-
 	virtual void ExecuteInteraction(class APlayerCharacterBase* Player) override;
 
 public:
@@ -51,11 +44,4 @@ private:
 
 	UPROPERTY()
 	class UNPCDialog* NPCDialog;
-
-	//가지고있는 Dialog내용과 퀘스트 내용
-	UPROPERTY()
-	TArray<FString> NPCDialogArray;
-
-	UPROPERTY()
-	FQuestData CombineQuest;
 };

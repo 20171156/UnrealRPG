@@ -7,7 +7,6 @@
 
 UInventory::UInventory()
 {
-
 }
 
 void UInventory::InitializeInventory()
@@ -16,7 +15,7 @@ void UInventory::InitializeInventory()
 	ChangeMPPotion.Broadcast();
 }
 
-void UInventory::AddItem(FName ItemName)
+void UInventory::AddItem(FName ItemName, bool IsQuestItem/* = false*/)
 {
 	auto ItemValue = InventoryItemMap.Find(ItemName);
 	
@@ -44,9 +43,15 @@ void UInventory::AddItem(FName ItemName)
 			UpdatepPotionSlotCount(ItemName);
 		}
 	}
+
+	//추가된 아이템이 퀘스트 아이템이라면 위젯에 갯수를 업데이트한다
+	if (IsQuestItem)
+	{
+		OnAddQuestItem.Broadcast();
+	}
 }
 
-bool UInventory::UseItem(FName ItemName, FItemData& ResultItemData)
+bool UInventory::UseItem(FName ItemName, FItemData& ResultItemData, bool IsQuestItem/* = false*/)
 {
 	auto ItemValue = InventoryItemMap.Find(ItemName);
 
@@ -73,6 +78,12 @@ bool UInventory::UseItem(FName ItemName, FItemData& ResultItemData)
 	{
 		//...
 		return false;
+	}
+
+	//사용된 아이템이 퀘스트 아이템이라면 위젯에 갯수를 업데이트한다
+	if (IsQuestItem)
+	{
+		OnAddQuestItem.Broadcast();
 	}
 }
 

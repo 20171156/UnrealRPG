@@ -5,7 +5,9 @@
 #include "PlayerCharacterBase.h"
 #include "Components/BoxComponent.h"
 #include "Particles/ParticleSystemComponent.h"
+
 #include "Kismet/GameplayStatics.h"
+#include "MyGameInstance.h"
 
 // Sets default values
 ATransferLevelPoint::ATransferLevelPoint()
@@ -47,8 +49,6 @@ void ATransferLevelPoint::BeginPlay()
 void ATransferLevelPoint::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	GetWorld()->GetMapName();
 }
 
 void ATransferLevelPoint::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -58,6 +58,17 @@ void ATransferLevelPoint::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 	{
 		if (MapName != FName{})
 		{
+			auto DataInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+			if (MapName == FName())
+			{
+				//DataInstance->SaveGameData(Player);
+			}
+			else if (MapName == FName())
+			{
+				//DataInstance->SaveGameData(Player);
+
+			}
+
 			UGameplayStatics::OpenLevel(this, MapName);
 		}
 	}

@@ -19,7 +19,7 @@ public:
 	UNPCDialog();
 
 	UFUNCTION()
-	void CreateNPCDialog(const EPlayerQuestState State);
+	void CreateNPCDialog(const EPlayerQuestState State, FName NPCName);
 
 	UFUNCTION()
 	void ResetDialogAndQuestData();
@@ -52,4 +52,7 @@ private:
 
 	UPROPERTY()
 	FQuestData CombineQuest;
+
+	UPROPERTY()
+	FName QuestNPCName;
 };

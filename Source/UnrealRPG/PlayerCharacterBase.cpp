@@ -259,14 +259,32 @@ void APlayerCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInter
 
 void APlayerCharacterBase::PickUpItem(FName ItemName)
 {
-	Inventory->AddItem(ItemName);
+	FQuestData Data = QuestSystem->GetQuestData();
+	if (Data.QuestItemName == ItemName.ToString())
+	{
+		Inventory->AddItem(ItemName, true);
+	}
+	else
+	{
+		Inventory->AddItem(ItemName, false);
+	}
 }
 
 void APlayerCharacterBase::UseItem(FName ItemName)
 {
 	FItemData ResultItemData;
-	bool IsUse = Inventory->UseItem(ItemName, ResultItemData);
+	bool IsUse = false;
 
+	FQuestData Data = QuestSystem->GetQuestData();
+	if (Data.QuestItemName == ItemName.ToString())
+	{
+		Inventory->UseItem(ItemName, ResultItemData, true);
+	}
+	else
+	{
+		Inventory->UseItem(ItemName, ResultItemData, false);
+	}
+	
 	if (IsUse)//아이템 사용됨
 	{
 		if (ItemName == FName("HPPotion"))
@@ -282,6 +300,8 @@ void APlayerCharacterBase::UseItem(FName ItemName)
 	{
 
 	}
+
+
 }
 
 void APlayerCharacterBase::PlayerHpZero()

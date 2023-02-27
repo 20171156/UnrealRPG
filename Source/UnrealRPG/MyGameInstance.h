@@ -32,6 +32,8 @@ public:
 	TArray<FDialogData*> GetAllDialogData();
 	TArray<FQuestData*> GetAllQuestData();
 
+	//void SaveGameData();
+	//void LoadGameData();
 
 private:
 	UPROPERTY()

@@ -29,7 +29,8 @@ public:
 	void UpdateExp();
 	void UpdateHPPotionNum();
 	void UpdateMPPotionNum();
-	void UpdateQuest();
+	void UpdateQuestDialog();
+	void UpdateQuestItemCount();
 
 private:
 	void ChangeQuestDialogColor();

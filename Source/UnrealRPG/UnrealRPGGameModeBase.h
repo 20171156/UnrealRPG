@@ -32,13 +32,13 @@ public:
 	void CloseInventory();
 
 	UFUNCTION()
-	void OpenDialogWidget(ACharacter* NPC);
+	void OpenDialogWidget(FString NPCName, TArray<FString> NPCDialog);
 
 	UFUNCTION()
 	void UpdateDialogWidget();
 
 	UFUNCTION()
-	void CloseDialogWidget(const FQuestData& QuestData);
+	void CloseDialogWidget();
 	
 	UFUNCTION()
 	bool CheckOpenDialogWidget() { return IsOpenDialogWidget; }

@@ -8,6 +8,7 @@
 #include "PlayerQuestSystem.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FChangeQuestData);
+//DECLARE_MULTICAST_DELEGATE(FChangeQuestItemCount);
 
 /**
  * 퀘스트 시스템 클래스 : 비어있거나 하나의 퀘스트를 가질 수 있음 / 인벤토리 시스템과 연결
@@ -28,8 +29,6 @@ public:
 	UFUNCTION()
 	void SetNewQuest(const FQuestData& Data);
 
-
-
 	UFUNCTION()
 	void ClearQuest();
 
@@ -42,4 +41,6 @@ public:
 private:
 	UPROPERTY()
 	FQuestData Quest;
+
+	TWeakObjectPtr<class UInventory> Inventory;
 };

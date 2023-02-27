@@ -22,7 +22,7 @@ protected:
 
 public:
 	UFUNCTION()
-	void BindWidget(ACharacter* NPCClass/*class ANPC* NPCClass*/);
+	void BindWidget(FString NPCName, TArray<FString> NPCDialogArray);
 
 	UFUNCTION()
 	void UpdateDialog();
@@ -33,17 +33,15 @@ private:
 
 private:
 	UPROPERTY()
-	class ANPC* NPC;
-
-	UPROPERTY()
 	TArray<FString> DialogArray;
 
-	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* NPCName;
-
-	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* NPCDialog;
-
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY()
 	int32 DialogCount = 0;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* NPCNameText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* NPCDialogText;
+
 };

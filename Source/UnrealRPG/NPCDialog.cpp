@@ -11,13 +11,15 @@ UNPCDialog::UNPCDialog()
 {
 }
 
-void UNPCDialog::CreateNPCDialog(const EPlayerQuestState State)
+void UNPCDialog::CreateNPCDialog(const EPlayerQuestState State, FName NPCName)
 {
     DataInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
     if (!IsValid(DataInstance))
     {
         return;
     }
+
+    QuestNPCName = NPCName;
 
     switch (State)
     {
@@ -49,6 +51,7 @@ void UNPCDialog::ResetDialogAndQuestData()
 {
     CombineDialogArray.Empty();
    
+    CombineQuest.QuestNPCName = FString{};
     CombineQuest.QuestDialog = FString{};
     CombineQuest.MINCount = 0;
     CombineQuest.MAXCount = 0;
@@ -131,9 +134,11 @@ void UNPCDialog::CombineQuestDialog()
         CombineDialogArray.Emplace(QuestData->QuestDialog);
 
         //조합된 퀘스트 내용 저장하기
+        CombineQuest.QuestNPCName = QuestNPCName.ToString();
         CombineQuest.QuestDialog = QuestData->QuestDialog;
         CombineQuest.QuestItemName = QuestData->QuestItemName;
         CombineQuest.QuestRequireCount = RequiredNum;
+        CombineQuest.GainExp = QuestData->GainExp;
     }
 
     //FString stringtest = TEXT("item : {0} count : {1}");

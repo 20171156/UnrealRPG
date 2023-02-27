@@ -49,6 +49,11 @@ void ANPC::BeginPlay()
 	//DialogText 생성하기
 	NPCDialog = NewObject<UNPCDialog>(this, UNPCDialog::StaticClass());
 
+	if (Tags.IsValidIndex(1))
+	{
+		NPCName = Tags[1];
+	}
+
 	InteractionComponent->OnComponentBeginOverlap.AddDynamic(this, &ANPC::OnOverlapBegin);
 	InteractionComponent->OnComponentEndOverlap.AddDynamic(this, &ANPC::OnOverlapEnd);
 }
@@ -57,11 +62,6 @@ void ANPC::BeginPlay()
 void ANPC::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}
-
-void ANPC::ResetDialogData()
-{
-	NPCDialog->ResetDialogAndQuestData();
 }
 
 void ANPC::ExecuteInteraction(APlayerCharacterBase* Player)
@@ -74,28 +74,25 @@ void ANPC::ExecuteInteraction(APlayerCharacterBase* Player)
 
 	//상황에 맞는 Dialog와 Quest 만들기
 	EPlayerQuestState State = Player->GetQuestState();
-	NPCDialog->CreateNPCDialog(State);
+	NPCDialog->CreateNPCDialog(State, Tags[1]);
 
-	NPCDialogArray = NPCDialog->GetDialogData();//상황에 맞게 Dialog 저장
-	switch (State)//퀘스트를 처음 받을 때만 받기
+	//만든 Dialog를 DialogWidget에 전달
+	TArray<FString> NPCDialogArray = NPCDialog->GetDialogData();
+	if (Tags.IsValidIndex(1))
 	{
-	case EPlayerQuestState::EMPTY:
-	{
-		CombineQuest = NPCDialog->GetCombineQuestData();
-		break;
-	}
-	case EPlayerQuestState::ACCEPTED://기존 퀘스트를 보관함
-	{
-		break;
-	}
-	case EPlayerQuestState::COMPLETE:
-	{
-		break;
-	}
+		GameMode->OpenDialogWidget(Tags[1].ToString(), NPCDialogArray);
 	}
 
-	//만든 Dialog와 Quest를 전달하기
-	GameMode->OpenDialogWidget(this);
+	//QuestData는 Player에 전달(단, 이미 퀘스트를 받은 상태라면 전달할 필요 없음)
+	if (Player->GetQuestState() == EPlayerQuestState::EMPTY)
+	{
+		FQuestData CombineQuest = NPCDialog->GetCombineQuestData();
+		Player->SetQuestData(CombineQuest);
+		Player->SetQuestState(EPlayerQuestState::ACCEPTED);
+	}
+
+	//그리고 Dialog 데이터는 초기화
+	NPCDialog->ResetDialogAndQuestData();
 }
 
 void ANPC::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

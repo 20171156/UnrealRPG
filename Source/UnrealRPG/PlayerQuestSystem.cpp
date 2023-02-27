@@ -9,6 +9,7 @@ UPlayerQuestSystem::UPlayerQuestSystem()
 
 void UPlayerQuestSystem::InitializeQuestSystem()
 {
+    Quest.QuestNPCName = FString{};
     Quest.QuestDialog = FString{};
     Quest.MINCount = 0;
     Quest.MAXCount = 0;
@@ -28,6 +29,7 @@ void UPlayerQuestSystem::SetNewQuest(const FQuestData& Data)
 
 void UPlayerQuestSystem::ClearQuest()
 {
+    Quest.QuestNPCName = FString{};
     Quest.QuestDialog = FString{};
     Quest.MINCount = 0;
     Quest.MAXCount = 0;

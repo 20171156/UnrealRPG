@@ -2,7 +2,6 @@
 
 
 #include "DialogWidget.h"
-#include "NPC.h"
 #include "Components/TextBlock.h"
 #include "UnrealRPGGameModeBase.h"
 
@@ -16,27 +15,23 @@ void UDialogWidget::NativeConstruct()
 	Super::NativeConstruct();
 }
 
-void UDialogWidget::BindWidget(ACharacter* NPCClass/*ANPC* NPCClass*/)
+void UDialogWidget::BindWidget(FString NPCName, TArray<FString> NPCDialogArray)
 {
-	//대화 시작시에 호출될 함수
-	if (IsValid(NPCClass))
+	if (NPCDialogArray.Num() == 0)
 	{
-		NPC = Cast<ANPC>(NPCClass);
-
-		if (nullptr != NPCName)
-		{
-			NPCName->SetText(FText::FromName(NPC->Tags[1]));
-		}
-
-		DialogArray = NPC->GetNPCDialog();
-		if (DialogArray.Num() == 0)
-		{
-			return;
-		}
-
-		DialogCount = 0;
-		UpdateDialog();
+		return;
 	}
+
+	DialogArray = NPCDialogArray;
+
+	if (nullptr != NPCNameText)
+	{
+		NPCNameText->SetText(FText::FromString(NPCName));
+	}
+
+	DialogCount = 0;
+
+	UpdateDialog();
 }
 
 void UDialogWidget::UpdateDialog()
@@ -51,19 +46,13 @@ void UDialogWidget::UpdateDialog()
 
 	if (DialogArray.IsValidIndex(DialogCount))
 	{
-		NPCDialog->SetText(FText::FromString(DialogArray[DialogCount]));
+		NPCDialogText->SetText(FText::FromString(DialogArray[DialogCount]));
 		++DialogCount;
 	}
 }
 
 void UDialogWidget::CloseDialog()
 {
-	//NPCDialog 데이터 초기화
-	NPC->ResetDialogData();
-
-	//NPC의 퀘스트 데이터를 체크해서 넘기기
-	FQuestData QuestData = NPC->GetQuestData();
-
 	AUnrealRPGGameModeBase* GameMode = Cast<AUnrealRPGGameModeBase>(GetWorld()->GetAuthGameMode());
-	GameMode->CloseDialogWidget(QuestData);
+	GameMode->CloseDialogWidget();
 }

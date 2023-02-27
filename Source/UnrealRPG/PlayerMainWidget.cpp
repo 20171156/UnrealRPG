@@ -35,7 +35,9 @@ void UPlayerMainWidget::BindWidget(UStatComponent* StatCompClass, UInventory* In
 		InventoryClass->ChangeHPPotion.AddUObject(this, &UPlayerMainWidget::UpdateHPPotionNum);
 		InventoryClass->ChangeMPPotion.AddUObject(this, &UPlayerMainWidget::UpdateMPPotionNum);
 
-		QuestClass->ChangeQuestData.AddUObject(this, &UPlayerMainWidget::UpdateQuest);
+		QuestClass->ChangeQuestData.AddUObject(this, &UPlayerMainWidget::UpdateQuestDialog);
+		QuestClass->ChangeQuestData.AddUObject(this, &UPlayerMainWidget::UpdateQuestItemCount);
+		InventoryClass->OnAddQuestItem.AddUObject(this, &UPlayerMainWidget::UpdateQuestItemCount);
 	}
 }
 
@@ -119,9 +121,9 @@ void UPlayerMainWidget::UpdateMPPotionNum()
 	}
 }
 
-void UPlayerMainWidget::UpdateQuest()
+void UPlayerMainWidget::UpdateQuestDialog()
 {
-	if (QuestSystem.IsValid() && Inventory.IsValid())
+	if (QuestSystem.IsValid())
 	{
 		FQuestData Quest = QuestSystem->GetQuestData();
 		if (FString{} == Quest.QuestDialog)//퀘스트 데이터가 비어있다면 비어있다고 표시해주기
@@ -135,16 +137,25 @@ void UPlayerMainWidget::UpdateQuest()
 			{
 				QuestText->SetText(FText::FromString(Quest.QuestDialog));
 			}
-			if (nullptr != QuestItemCount)
-			{
-				int32 CurrentCount = Inventory->GetItemCount(FName(*Quest.QuestItemName));
-				FString CountText = FString::Printf(TEXT("%d / %d"), CurrentCount, Quest.QuestRequireCount);
-				QuestItemCount->SetText(FText::FromString(CountText));
+		}
+	}
+}
 
-				if (CurrentCount >= Quest.QuestRequireCount)
-				{
-					ChangeQuestDialogColor();
-				}
+void UPlayerMainWidget::UpdateQuestItemCount()
+{
+	if (Inventory.IsValid())
+	{
+		FQuestData Quest = QuestSystem->GetQuestData();
+		
+		if (nullptr != QuestItemCount)
+		{
+			int32 CurrentCount = Inventory->GetItemCount(FName(*Quest.QuestItemName));
+			FString CountText = FString::Printf(TEXT("%d / %d"), CurrentCount, Quest.QuestRequireCount);
+			QuestItemCount->SetText(FText::FromString(CountText));
+
+			if (CurrentCount >= Quest.QuestRequireCount)
+			{
+				ChangeQuestDialogColor();
 			}
 		}
 	}
