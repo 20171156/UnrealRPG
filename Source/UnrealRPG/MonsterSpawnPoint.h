@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class UNREALRPG_API AMonsterSpawnPoint : public ATargetPoint
+class UNREALRPG_API AMonsterSpawnPoint : public AActor
 {
 	GENERATED_BODY()
 
@@ -30,7 +30,4 @@ public:
 private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	class UParticleSystemComponent* ParticleComponent;
-
-	UPROPERTY(EditAnywhere, Category = Particle, meta = (AllowPrivateAccess = "true"))
-	class UParticleSystem* Particle;
 };

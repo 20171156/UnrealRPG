@@ -29,7 +29,7 @@ private:
 	void SpawnMonster();
 
 	UFUNCTION()
-	void SpawnPotion(AActor* DestroyedActor);
+	void SpawnItem(AActor* DestroyedActor);
 
 private:
 	TArray<class AMonsterCharacterBase*> SpawnMonsterArray;

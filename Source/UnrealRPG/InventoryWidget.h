@@ -24,21 +24,18 @@ protected:
 public:
 	void BindWidget(class UInventory* Inventory);
 
-private:
-	void UpdatePotionNumText(ECharacterStatType PotionType);
+	UFUNCTION()
+	void AddItemInventory(class UInventoryItem* Item);
+	
+	UFUNCTION()
+	void RemoveItemInventory(class UInventoryItem* Item);
+
+	UFUNCTION()
+	void UpdateItemCountInventory(class UInventoryItem* Item);
 
 private:
 	TWeakObjectPtr<class UInventory> PlayerInventory;
 
-	UPROPERTY(meta = (BindWidget))
-	class UImage* HPPotionImage;
-
-	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* HPPotionNum;
-
-	UPROPERTY(meta = (BindWidget))
-	class UImage* MPPotionImage;
-
-	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* MPPotionNum;
+	UPROPERTY(Meta = (BindWidget))
+	class UTileView* InventoryTileView;
 };

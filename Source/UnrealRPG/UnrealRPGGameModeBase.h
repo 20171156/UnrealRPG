@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CustomStruct.h"
 #include "GameFramework/GameModeBase.h"
 #include "UnrealRPGGameModeBase.generated.h"
 
@@ -21,11 +22,43 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
+	UFUNCTION()
+	void OpenGameEndWidget();
+
+	UFUNCTION()
+	void OpenInventory();
+
+	UFUNCTION()
+	void CloseInventory();
+
+	UFUNCTION()
+	void OpenDialogWidget(ACharacter* NPC);
+
+	UFUNCTION()
+	void UpdateDialogWidget();
+
+	UFUNCTION()
+	void CloseDialogWidget(const FQuestData& QuestData);
+	
+	UFUNCTION()
+	bool CheckOpenDialogWidget() { return IsOpenDialogWidget; }
+
+private:
+	UFUNCTION()
+	void UpdatePlayerInteracting();
+
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UPlayerMainWidget> PlayerMainWidgetClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UInventoryWidget> InventoryWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UGameEndWidget> GameEndWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UDialogWidget> NPCDialogWidgetClass;
 
 private:
 	UPROPERTY()
@@ -33,4 +66,13 @@ private:
 
 	UPROPERTY()
 	UInventoryWidget* InventoryWidget;
+
+	UPROPERTY()
+	UGameEndWidget* GameEndWidget;
+
+	UPROPERTY()
+	UDialogWidget* NPCDialogWidget;
+
+	UPROPERTY()
+	bool IsOpenDialogWidget = false;
 };

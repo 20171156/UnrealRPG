@@ -4,7 +4,6 @@
 #include "Item.h"
 #include "MyGameInstance.h"
 #include "Kismet/GameplayStatics.h"
-#include "CustomEnum.h"
 #include "PlayerCharacterBase.h"
 
 // Sets default values
@@ -22,20 +21,12 @@ void AItem::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	auto DataInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-
-	if (DataInstance)
-	{
-		if (Tags.IsValidIndex(0))
-		{
-			ItemData = *(DataInstance->GetPotionData(Tags[0]));
-		}
-	}
-
 	MeshComponent->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnOverlapBegin);
 	MeshComponent->OnComponentEndOverlap.AddDynamic(this, &AItem::OnOverlapEnd);
 
 	MeshComponent->SetCollisionProfileName("Item");
+	MeshComponent->SetSimulatePhysics(true);
+	MeshComponent->SetMassOverrideInKg(NAME_None, 100);
 }
 
 // Called when the game starts or when spawned
@@ -48,14 +39,18 @@ void AItem::BeginPlay()
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
 
+void AItem::InitializeItemName(FName ItemData)
+{
+	ItemName = ItemData;
 }
 
 void AItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor->ActorHasTag(FName(TEXT("Player"))))
 	{
-		Cast<APlayerCharacterBase>(OtherActor)->AddPotion(ItemType);
+		Cast<APlayerCharacterBase>(OtherActor)->PickUpItem(ItemName);
 
 		Destroy();
 	}

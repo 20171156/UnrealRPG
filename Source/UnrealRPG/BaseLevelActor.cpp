@@ -28,7 +28,7 @@ void ABaseLevelActor::BeginPlay()
 	Super::BeginPlay();
 
 	srand(time(0));
-
+	
 	UWorld* world = GetWorld();
 	for (const auto& TargetActor : TActorRange<AMonsterSpawnPoint>(world))
 	{
@@ -38,13 +38,16 @@ void ABaseLevelActor::BeginPlay()
 		}
 	}
 
-	SpawnMonster();
+	if (SpawnPointArray.Num() != 0)
+	{
+		SpawnMonster();
+	}
 }
 
 void ABaseLevelActor::MonsterIsDead(AActor* DestroyedActor)
 {
 	//포션 드랍
-	SpawnPotion(DestroyedActor);
+	SpawnItem(DestroyedActor);
 
 	//새로운 몬스터 소환
 	SpawnMonsterArray.RemoveSingle(Cast<AMonsterCharacterBase>(DestroyedActor));
@@ -65,7 +68,7 @@ void ABaseLevelActor::SpawnMonster()
 		return;
 	}
 
-	auto MonsterArray = DataInstance->GetMonsterAllData();
+	auto MonsterArray = DataInstance->GetAllMonsterData();
 	for (int32 i = 0; i < SpawnMonsterNum; ++i)
 	{
 		int32 SectionNum = FMath::RandRange(0, MonsterArray.Num() - 1);
@@ -77,7 +80,6 @@ void ABaseLevelActor::SpawnMonster()
 			int32 SpawnLocationNum = FMath::RandRange(0, SpawnPointArray.Num() - 1);
 
 			FActorSpawnParameters SpawnParams;
-			//FRotator Rotator = FRotator::ZeroRotator;
 			FRotator SpawnRotator;
 			FVector SpawnLocation;
 			SpawnParams.Owner = this;
@@ -88,7 +90,6 @@ void ABaseLevelActor::SpawnMonster()
 				SpawnRotator = SpawnPointArray[SpawnLocationNum]->GetActorRotation();
 			}
 
-			//SpawnedMonster = GetWorld()->SpawnActor<AMonsterCharacterBase>(SelectMonster, SpawnLocation, Rotator, SpawnParams);
 			SpawnedMonster = GetWorld()->SpawnActor<AMonsterCharacterBase>(SelectMonster, SpawnLocation, SpawnRotator, SpawnParams);
 			
 			if (IsValid(SpawnedMonster))
@@ -103,9 +104,9 @@ void ABaseLevelActor::SpawnMonster()
 	}
 }
 
-void ABaseLevelActor::SpawnPotion(AActor* DestroyedActor)
+void ABaseLevelActor::SpawnItem(AActor* DestroyedActor)
 {
-	int32 SectionNum = FMath::RandRange(0, 1);
+	int32 SectionNum = FMath::RandRange(0, 4);
 
 	auto DataInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (!IsValid(DataInstance))
@@ -113,17 +114,18 @@ void ABaseLevelActor::SpawnPotion(AActor* DestroyedActor)
 		return;
 	}
 
-	auto PotionData = DataInstance->GetPotionAllData();
-	auto SelectPotion = StaticLoadClass(AItem::StaticClass(), NULL, *(PotionData[SectionNum]->Path));
+	auto ItemData = DataInstance->GetAllItemData();
+	auto ItemClass = (ItemData[SectionNum]->ItemClass).LoadSynchronous();
 
 	FActorSpawnParameters SpawnParams;
 	FRotator SpawnRotator = DestroyedActor->GetActorRotation();
 	FVector SpawnLocation = DestroyedActor->GetActorLocation();
 	SpawnParams.Owner = this;
 
-	auto Potion = GetWorld()->SpawnActor<AItem>(SelectPotion, SpawnLocation, SpawnRotator, SpawnParams);
+	auto ItemActor = GetWorld()->SpawnActor<AItem>(ItemClass, SpawnLocation, SpawnRotator, SpawnParams);
+	ItemActor->InitializeItemName(DataInstance->GetItemName(SectionNum));
 
-	if (!IsValid(Potion))
+	if (!IsValid(ItemActor))
 	{
 		return;
 	}

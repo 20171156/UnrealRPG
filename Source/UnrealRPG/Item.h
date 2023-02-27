@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "CustomStruct.h"
-#include "CustomEnum.h"
 #include "GameFramework/Actor.h"
 #include "Item.generated.h"
 
+/**
+ * 몬스터가 드랍하는 실체를 가지는 아이템 클래스
+ */
 UCLASS()
 class UNREALRPG_API AItem : public AActor
 {
@@ -27,6 +29,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
+	void InitializeItemName(FName ItemData);
+
+	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
@@ -36,9 +41,6 @@ private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* MeshComponent;
 
-	UPROPERTY(VisibleAnywhere, meta = (AllowPrivateAccess = "true"))
-	FPlayerStatData ItemData;
-
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	ECharacterStatType ItemType;
+	FName ItemName;
 };

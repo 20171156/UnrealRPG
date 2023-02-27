@@ -7,8 +7,12 @@
 #include "Components/CapsuleComponent.h"
 #include "StatComponent.h"
 #include "Inventory.h"
+#include "PlayerQuestSystem.h"
 #include "MonsterCharacterBase.h"
 #include "PlayableAnimInstance.h"
+#include "InteractionInterface.h"
+
+#include "UnrealRPGGameModeBase.h"
 #include "DrawDebugHelpers.h"//디버깅용 코드
 
 // Sets default values
@@ -30,9 +34,9 @@ APlayerCharacterBase::APlayerCharacterBase()
 	SpringArm->SetupAttachment(GetCapsuleComponent());
 	Camera->SetupAttachment(SpringArm);
 
-	//캐릭터 생성할 때 인벤토리 시스템 생성
+	//캐릭터 생성할 때 인벤토리 시스템, 퀘스트 시스템 생성
 	Inventory = CreateDefaultSubobject<UInventory>(TEXT("INVENTORY"));
-	Inventory->InitInventory();
+	QuestSystem = CreateDefaultSubobject<UPlayerQuestSystem>(TEXT("QUESTSYSTEM"));
 }
 
 void APlayerCharacterBase::PostInitializeComponents()
@@ -63,6 +67,9 @@ void APlayerCharacterBase::PostInitializeComponents()
 void APlayerCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Inventory->InitializeInventory();
+	QuestSystem->InitializeQuestSystem();
 
 	UE_LOG(LogTemp, Log, TEXT("Player Spawn Complete!"));
 	UE_LOG(LogTemp, Log, TEXT("PlayerName : %s"), *CurrentStat->GetName());
@@ -100,13 +107,40 @@ float APlayerCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& D
 void APlayerCharacterBase::CharacterDestroy()
 {
 	Destroy();
-	//FTimerHandle DestroyHandle;
-	//float WaitTime = 1.5f;
-	//GetWorld()->GetTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([&]()
-	//	{
-	//		Destroy();
-	//		GetWorldTimerManager().ClearTimer(DestroyHandle);
-	//	}), WaitTime, false);
+
+	AUnrealRPGGameModeBase* GameMode = Cast<AUnrealRPGGameModeBase>(GetWorld()->GetAuthGameMode());
+	GameMode->OpenGameEndWidget();
+}
+
+void APlayerCharacterBase::SetPossibleInteraction(bool PossibleInteraction, AActor* OverlapActor/*= nullptr*/)
+{
+	if (PossibleInteraction)
+	{
+		InteractionActor = OverlapActor;
+	}
+	else
+	{
+		InteractionActor = nullptr;
+	}
+
+	IsPossibleInteraction = PossibleInteraction;
+}
+
+void APlayerCharacterBase::InteractActor()
+{
+	if(InteractionActor->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
+	{
+		if (IsValid(InteractionActor))
+		{
+			IInteractionInterface* Actor = Cast<IInteractionInterface>(InteractionActor);
+			Actor->ExecuteInteraction(this);
+		}
+	}
+}
+
+void APlayerCharacterBase::SetQuestData(const FQuestData& QuestData)
+{
+	QuestSystem->SetNewQuest(QuestData);
 }
 
 void APlayerCharacterBase::ChangeCollisionProfile(bool bAbleOverlap)
@@ -223,16 +257,31 @@ void APlayerCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInter
 	}
 }
 
-void APlayerCharacterBase::AddPotion(ECharacterStatType PotionType)
+void APlayerCharacterBase::PickUpItem(FName ItemName)
 {
-	Inventory->AddPotion(PotionType);
+	Inventory->AddItem(ItemName);
 }
 
-void APlayerCharacterBase::UsePotion(ECharacterStatType PotionType)
+void APlayerCharacterBase::UseItem(FName ItemName)
 {
-	Inventory->UsePotion(PotionType);
+	FItemData ResultItemData;
+	bool IsUse = Inventory->UseItem(ItemName, ResultItemData);
 
-	CurrentStat->SetCurrentHp(10);//추후 수정할 것, 값 강제로 넣고있음
+	if (IsUse)//아이템 사용됨
+	{
+		if (ItemName == FName("HPPotion"))
+		{
+			CurrentStat->SetCurrentHp(ResultItemData.ItemValue.Hp);
+		}
+		else if (ItemName == FName("MPPotion"))
+		{
+			CurrentStat->SetCurrentHp(ResultItemData.ItemValue.Mp);
+		}
+	}
+	else//아이템 없어서 사용 불가
+	{
+
+	}
 }
 
 void APlayerCharacterBase::PlayerHpZero()

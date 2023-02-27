@@ -32,9 +32,6 @@ public:
 	UFUNCTION()
 	void ZoomOut();
 
-	UFUNCTION()//Test
-	void ChangeMenu();
-
 	UFUNCTION()
 	void MoveUpDown(float Value);
 
@@ -53,6 +50,12 @@ public:
 	UFUNCTION()
 	void UseItem2();
 
+	UFUNCTION()
+	void CheckOpenInventory();
+
+	UFUNCTION()
+	void ExecuteInteraction();
+
 public:
 	UPROPERTY()
 	float UpDownValue = 0.f;
@@ -61,9 +64,6 @@ public:
 	float LeftRightValue = 0.f;
 
 private:
-	UPROPERTY()
-	bool IsVisibleUI = false;
-
 	UPROPERTY()
 	int32 AttackIndex = 0;
 };

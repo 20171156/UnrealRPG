@@ -89,7 +89,6 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Stat, Meta = (AllowPrivateAccess = true))
 	int32 MaxMp;
 
-
 	//변화 데이터
 	UPROPERTY(VisibleAnywhere, Category = Stat, Meta = (AllowPrivateAccess = true))
 	int32 CurrentExp;

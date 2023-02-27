@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "CustomEnum.h"
+#include "CustomStruct.h"
 #include "PlayerCharacterBase.generated.h"
 
 //DECLARE_MULTICAST_DELEGATE(FPlayerOnAttackEnd);
@@ -30,9 +31,33 @@ public:
 
 	UFUNCTION()
 	class UStatComponent* GetStatComponent() { return CurrentStat; }
+	
+	UFUNCTION()
 	class UInventory* GetInventory() { return Inventory; }
 
+	UFUNCTION()
+	class UPlayerQuestSystem* GetQuestSystem() { return QuestSystem; }
+
 	bool GetDead() { return bIsDead; }
+	
+	void SetInventoryState(bool OpenInventory) { IsOpenInventory = OpenInventory; }
+	bool GetInventoryState() { return IsOpenInventory; }
+
+	UFUNCTION()
+	void SetPossibleInteraction(bool PossibleInteraction, AActor* OverlapActor = nullptr);
+	bool GetPossibleInteraction() { return IsPossibleInteraction; }
+
+	void SetInteracting(bool Interacting) { IsInteracting = Interacting; }
+	bool GetInteracting() { return IsInteracting; }
+
+	UFUNCTION()
+	void InteractActor();
+
+	void SetQuestData(const FQuestData& QuestData);
+	
+	void SetQuestState(EPlayerQuestState State) { QuestState = State; }
+	EPlayerQuestState GetQuestState() { return QuestState; }
+
 
 public:
 	UFUNCTION()
@@ -54,10 +79,10 @@ public:
 	void OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	UFUNCTION()
-	void AddPotion(ECharacterStatType PotionType);
+	void PickUpItem(FName ItemName);
 
 	UFUNCTION()
-	void UsePotion(ECharacterStatType PotionType);
+	void UseItem(FName ItemName);
 
 private:
 	UFUNCTION()
@@ -87,6 +112,9 @@ private:
 	class UInventory* Inventory;
 
 	UPROPERTY()
+	class UPlayerQuestSystem* QuestSystem;
+
+	UPROPERTY()
 	bool bIsAttacking = false;
 
 	UPROPERTY()
@@ -94,6 +122,23 @@ private:
 
 	UPROPERTY()
 	bool bIsDead = false;
+
+	UPROPERTY()
+	bool IsOpenInventory = false;
+
+	//Interaction 관련 Property
+	UPROPERTY()
+	bool IsPossibleInteraction = false;
+
+	UPROPERTY()
+	AActor* InteractionActor;
+
+	UPROPERTY()
+	bool IsInteracting = false;
+
+	//Quest 관련 Property
+	UPROPERTY()
+	EPlayerQuestState QuestState = EPlayerQuestState::EMPTY;
 
 	UPROPERTY()
 	int32 TestAttackCount = 0;

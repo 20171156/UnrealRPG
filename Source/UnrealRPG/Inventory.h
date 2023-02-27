@@ -4,14 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "CustomEnum.h"
+#include "CustomStruct.h"
 #include "Inventory.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FAddPotion, ECharacterStatType);
-DECLARE_MULTICAST_DELEGATE_OneParam(FUsePotion, ECharacterStatType);
+DECLARE_MULTICAST_DELEGATE_OneParam(FAddNewItem, class UInventoryItem*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FRemoveItem, class UInventoryItem*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FCountCheckItem, class UInventoryItem*);
+DECLARE_MULTICAST_DELEGATE(FChangeHPPotion);
+DECLARE_MULTICAST_DELEGATE(FChangeMPPotion);
 
 /**
- * 
+ * 인벤토리 위젯과 연동될 인벤토리 아이템을 가짐
  */
 UCLASS()
 class UNREALRPG_API UInventory : public UObject
@@ -21,20 +24,29 @@ class UNREALRPG_API UInventory : public UObject
 public:
 	UInventory();
 
-public:
-	void InitInventory();
-	void AddPotion(ECharacterStatType ItemType);
-	bool UsePotion(ECharacterStatType ItemType);
+	UFUNCTION()
+	void InitializeInventory();
 
-	const uint32& GetHPPotionNum() { return HPPotionNum; }
-	const uint32& GetMPPotionNum() { return MPPotionNum; }
+	UFUNCTION()
+	void AddItem(FName ItemName);
 
-public:
-	FAddPotion OnAddPotion;
-	FUsePotion OnUsePotion;
+	UFUNCTION()
+	bool UseItem(FName ItemName, FItemData& ResultItemData);
+
+	UFUNCTION()
+	int32 GetItemCount(FName ItemName);
 
 private:
-	uint32 HPPotionNum = 0;
-	uint32 MPPotionNum = 0;
-	uint32 MaxPotionNum = 5;
+	UFUNCTION()
+	void UpdatepPotionSlotCount(FName ItemName);
+
+public:
+	FAddNewItem OnAddNewItem;
+	FRemoveItem OnRemoveItem;
+	FCountCheckItem OnCountCheckItem;
+	FChangeHPPotion ChangeHPPotion;
+	FChangeMPPotion ChangeMPPotion;
+
+private:
+	TMap<FName, class UInventoryItem*> InventoryItemMap;
 };

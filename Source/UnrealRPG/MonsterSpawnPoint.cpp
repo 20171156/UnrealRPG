@@ -3,8 +3,7 @@
 
 #include "MonsterSpawnPoint.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "Components/BillboardComponent.h"
-#include "Kismet/GameplayStatics.h"
+//#include "Kismet/GameplayStatics.h"
 
 AMonsterSpawnPoint::AMonsterSpawnPoint()
 {
@@ -12,9 +11,8 @@ AMonsterSpawnPoint::AMonsterSpawnPoint()
 
 	ParticleComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Particle"));
 
-	ParticleComponent->SetupAttachment(Cast<USceneComponent>(GetSpriteComponent()));
-	ParticleComponent->bAutoActivate = false;
-	//ParticleComponent->ActivateSystem(true);
+	ParticleComponent->SetupAttachment(RootComponent);
+	//ParticleComponent->bAutoActivate = true;
 }
 
 void AMonsterSpawnPoint::PostInitializeComponents()
@@ -35,6 +33,13 @@ void AMonsterSpawnPoint::Tick(float DeltaTime)
 
 void AMonsterSpawnPoint::PlayParticleComponent()
 {
-	auto test = UGameplayStatics::SpawnEmitterAttached(Particle, GetSpriteComponent(), TEXT("None"), GetActorLocation(), FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
+	ParticleComponent->Activate(true);
 
+	FTimerHandle DestroyHandle;
+	float WaitTime = 2.f;
+	GetWorld()->GetTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([&]()
+		{
+			ParticleComponent->Deactivate();
+			GetWorldTimerManager().ClearTimer(DestroyHandle);
+		}), WaitTime, false);
 }

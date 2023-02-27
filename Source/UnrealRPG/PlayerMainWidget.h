@@ -21,15 +21,25 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	void BindWidget(class UStatComponent* StatComp);
+	void BindWidget(class UStatComponent* StatCompClass, class UInventory* InventoryClass, class UPlayerQuestSystem* QuestClass);
 	void UpdateLevel();
 	void UpdateHp();
 	void UpdateMp();
 	void UpdateSp();
 	void UpdateExp();
+	void UpdateHPPotionNum();
+	void UpdateMPPotionNum();
+	void UpdateQuest();
+
+private:
+	void ChangeQuestDialogColor();
 
 private:
 	TWeakObjectPtr<class UStatComponent> CurrentStatComp;
+
+	TWeakObjectPtr<class UInventory> Inventory;
+
+	TWeakObjectPtr<class UPlayerQuestSystem> QuestSystem;
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* LevelText;
@@ -45,4 +55,22 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* EXPBar;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* HPPotionNum;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* MPPotionNum;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* QuestText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* QuestItemCount;
+
+	//UPROPERTY(meta = (BindWidget))
+	//class UTextBlock* InventoryQuestItemCount;
+
+	//UPROPERTY(meta = (BindWidget))
+	//class UTextBlock* RequiredQuestItemCount;
 };

@@ -7,7 +7,9 @@ UMyGameInstance::UMyGameInstance()
 {
 	static ConstructorHelpers::FObjectFinder<UDataTable> PlayerData(TEXT("DataTable'/Game/Datatable/StatDatatable_Player.StatDatatable_Player'"));
 	static ConstructorHelpers::FObjectFinder<UDataTable> MonsterData(TEXT("DataTable'/Game/Datatable/StatDatatable_Monster.StatDatatable_Monster'"));
-	static ConstructorHelpers::FObjectFinder<UDataTable> PotionData(TEXT("DataTable'/Game/Datatable/PotionData.PotionData'"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> ItemData(TEXT("DataTable'/Game/Datatable/ItemData.ItemData'"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> CommonDialogData(TEXT("DataTable'/Game/Datatable/NPCCommonDialog.NPCCommonDialog'"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> QuestDialogData(TEXT("DataTable'/Game/Datatable/NPCQuestDialog.NPCQuestDialog'"));
 
 	if (PlayerData.Succeeded())
 	{
@@ -21,10 +23,22 @@ UMyGameInstance::UMyGameInstance()
 		UE_LOG(LogTemp, Warning, TEXT("MonsterData Loading Complete."));
 	}
 
-	if (PotionData.Succeeded())
+	if (ItemData.Succeeded())
 	{
-		PotionStat = PotionData.Object;
-		UE_LOG(LogTemp, Warning, TEXT("PotionData Loading Complete."));
+		ItemList = ItemData.Object;
+		UE_LOG(LogTemp, Warning, TEXT("ItemData Loading Complete."));
+	}
+
+	if (CommonDialogData.Succeeded())
+	{
+		DialogList = CommonDialogData.Object;
+		UE_LOG(LogTemp, Warning, TEXT("DialogList Loading Complete."));
+	}
+
+	if (QuestDialogData.Succeeded())
+	{
+		QuestList = QuestDialogData.Object;
+		UE_LOG(LogTemp, Warning, TEXT("QuestList Loading Complete."));
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance Loading Complete."));
@@ -32,20 +46,43 @@ UMyGameInstance::UMyGameInstance()
 
 FPlayerStatData* UMyGameInstance::GetPlayerData(const int32& Level)
 {
-	return PlayerStat->FindRow<FPlayerStatData>(*FString::FromInt(Level), TEXT("Missing PlayerData"));
+	return PlayerStat->FindRow<FPlayerStatData>(*FString::FromInt(Level), TEXT("Do not find PlayerData"));
 }
 
 FMonsterStatData* UMyGameInstance::GetMonsterData(const FName& MonsterName)
 {
-	return MonsterStat->FindRow<FMonsterStatData>(MonsterName, TEXT("Missing MonsterData"));
+	return MonsterStat->FindRow<FMonsterStatData>(MonsterName, TEXT("Do not find MonsterData"));
 }
 
-FPlayerStatData* UMyGameInstance::GetPotionData(const FName& PotionName)
+FItemData* UMyGameInstance::GetItemData(const FName& ItemName)
 {
-	return PotionStat->FindRow<FPlayerStatData>(PotionName, TEXT("Missing PotionData"));
+	return ItemList->FindRow<FItemData>(ItemName, TEXT("Do not find ItemData"));
 }
 
-TArray<FMonsterStatData*> UMyGameInstance::GetMonsterAllData()
+FDialogData* UMyGameInstance::GetDialogData(const FName& DialogName)
+{
+	return DialogList->FindRow<FDialogData>(DialogName, TEXT("Do not find DialogData"));
+}
+
+FQuestData* UMyGameInstance::GetQuestData(const FName& QuestName)
+{
+	return QuestList->FindRow<FQuestData>(QuestName, TEXT("Do not find QuestData"));
+}
+
+FName UMyGameInstance::GetItemName(int32 Index)
+{
+	TArray<FName> ItemName = ItemList->GetRowNames();
+	if (ItemName.IsValidIndex(Index))
+	{
+		return ItemName[Index];
+	}
+	else
+	{
+		return FName{};
+	}
+}
+
+TArray<FMonsterStatData*> UMyGameInstance::GetAllMonsterData()
 {
 	TArray<FMonsterStatData*> Arr;
 	MonsterStat->GetAllRows(TEXT("Missing MonsterData"), Arr);
@@ -53,10 +90,26 @@ TArray<FMonsterStatData*> UMyGameInstance::GetMonsterAllData()
 	return Arr;
 }
 
-TArray<FPlayerStatData*> UMyGameInstance::GetPotionAllData()
+TArray<FItemData*> UMyGameInstance::GetAllItemData()
 {
-	TArray<FPlayerStatData*> Arr;
-	PotionStat->GetAllRows(TEXT("Missing PotionData"), Arr);
+	TArray<FItemData*> Arr;
+	ItemList->GetAllRows(TEXT("Missing ItemData"), Arr);
+
+	return Arr;
+}
+
+TArray<FDialogData*> UMyGameInstance::GetAllDialogData()
+{
+	TArray<FDialogData*> Arr;
+	ItemList->GetAllRows(TEXT("Missing DialogData"), Arr);
+
+	return Arr;
+}
+
+TArray<FQuestData*> UMyGameInstance::GetAllQuestData()
+{
+	TArray<FQuestData*> Arr;
+	ItemList->GetAllRows(TEXT("Missing QuestData"), Arr);
 
 	return Arr;
 }

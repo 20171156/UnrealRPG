@@ -3,6 +3,8 @@
 
 #include "PlayerMainWidget.h"
 #include "StatComponent.h"
+#include "Inventory.h"
+#include "PlayerQuestSystem.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 
@@ -16,15 +18,25 @@ void UPlayerMainWidget::NativeConstruct()
 	Super::NativeConstruct();
 }
 
-void UPlayerMainWidget::BindWidget(UStatComponent* StatComp)
+void UPlayerMainWidget::BindWidget(UStatComponent* StatCompClass, UInventory* InventoryClass, UPlayerQuestSystem* QuestClass)
 {
-	CurrentStatComp = StatComp;
+	if (IsValid(StatCompClass) && IsValid(InventoryClass))
+	{
+		CurrentStatComp = StatCompClass;
+		Inventory = InventoryClass;
+		QuestSystem = QuestClass;
 
-	StatComp->PlayerLevelChanged.AddUObject(this, &UPlayerMainWidget::UpdateLevel);
-	StatComp->PlayerHpChanged.AddUObject(this, &UPlayerMainWidget::UpdateHp);
-	StatComp->PlayerMpChanged.AddUObject(this, &UPlayerMainWidget::UpdateMp);
-	StatComp->PlayerSpChanged.AddUObject(this, &UPlayerMainWidget::UpdateSp);
-	StatComp->PlayerExpChanged.AddUObject(this, &UPlayerMainWidget::UpdateExp);
+		StatCompClass->PlayerLevelChanged.AddUObject(this, &UPlayerMainWidget::UpdateLevel);
+		StatCompClass->PlayerHpChanged.AddUObject(this, &UPlayerMainWidget::UpdateHp);
+		StatCompClass->PlayerMpChanged.AddUObject(this, &UPlayerMainWidget::UpdateMp);
+		StatCompClass->PlayerSpChanged.AddUObject(this, &UPlayerMainWidget::UpdateSp);
+		StatCompClass->PlayerExpChanged.AddUObject(this, &UPlayerMainWidget::UpdateExp);
+
+		InventoryClass->ChangeHPPotion.AddUObject(this, &UPlayerMainWidget::UpdateHPPotionNum);
+		InventoryClass->ChangeMPPotion.AddUObject(this, &UPlayerMainWidget::UpdateMPPotionNum);
+
+		QuestClass->ChangeQuestData.AddUObject(this, &UPlayerMainWidget::UpdateQuest);
+	}
 }
 
 void UPlayerMainWidget::UpdateLevel()
@@ -81,4 +93,64 @@ void UPlayerMainWidget::UpdateExp()
 			EXPBar->SetPercent(CurrentStatComp->GetExpRatio());
 		}
 	}
+}
+
+void UPlayerMainWidget::UpdateHPPotionNum()
+{
+	if (Inventory.IsValid())
+	{
+		if (nullptr != HPPotionNum)
+		{
+			FString InttoString = FString::FromInt(Inventory->GetItemCount(FName("HPPotion")));
+			HPPotionNum->SetText(FText::FromString(InttoString));
+		}
+	}
+}
+
+void UPlayerMainWidget::UpdateMPPotionNum()
+{
+	if (Inventory.IsValid())
+	{
+		if (nullptr != MPPotionNum)
+		{
+			FString InttoString = FString::FromInt(Inventory->GetItemCount(FName("MPPotion")));
+			MPPotionNum->SetText(FText::FromString(InttoString));
+		}
+	}
+}
+
+void UPlayerMainWidget::UpdateQuest()
+{
+	if (QuestSystem.IsValid() && Inventory.IsValid())
+	{
+		FQuestData Quest = QuestSystem->GetQuestData();
+		if (FString{} == Quest.QuestDialog)//퀘스트 데이터가 비어있다면 비어있다고 표시해주기
+		{
+			FName Text = FName("No Quest");
+			QuestText->SetText(FText::FromName(Text));
+		}
+		else
+		{
+			if (nullptr != QuestText)
+			{
+				QuestText->SetText(FText::FromString(Quest.QuestDialog));
+			}
+			if (nullptr != QuestItemCount)
+			{
+				int32 CurrentCount = Inventory->GetItemCount(FName(*Quest.QuestItemName));
+				FString CountText = FString::Printf(TEXT("%d / %d"), CurrentCount, Quest.QuestRequireCount);
+				QuestItemCount->SetText(FText::FromString(CountText));
+
+				if (CurrentCount >= Quest.QuestRequireCount)
+				{
+					ChangeQuestDialogColor();
+				}
+			}
+		}
+	}
+}
+
+void UPlayerMainWidget::ChangeQuestDialogColor()
+{
+	QuestItemCount->SetColorAndOpacity(FLinearColor::Red);
 }

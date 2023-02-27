@@ -21,10 +21,17 @@ public:
 
 	FPlayerStatData* GetPlayerData(const int32& Level);
 	FMonsterStatData* GetMonsterData(const FName& MonsterName);
-	FPlayerStatData* GetPotionData(const FName& PotionName);
+	FItemData* GetItemData(const FName& ItemName);
+	FDialogData* GetDialogData(const FName& DialogName);
+	FQuestData* GetQuestData(const FName& QuestName);
 	
-	TArray<FMonsterStatData*> GetMonsterAllData();
-	TArray<FPlayerStatData*> GetPotionAllData();
+	FName GetItemName(int32 Index);
+	
+	TArray<FMonsterStatData*> GetAllMonsterData();
+	TArray<FItemData*> GetAllItemData();
+	TArray<FDialogData*> GetAllDialogData();
+	TArray<FQuestData*> GetAllQuestData();
+
 
 private:
 	UPROPERTY()
@@ -34,5 +41,12 @@ private:
 	class UDataTable* MonsterStat;
 
 	UPROPERTY()
-	class UDataTable* PotionStat;
+	class UDataTable* ItemList;
+
+	UPROPERTY()
+	class UDataTable* DialogList;
+
+	UPROPERTY()
+	class UDataTable* QuestList;
+
 };

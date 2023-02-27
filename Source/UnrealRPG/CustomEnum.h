@@ -41,3 +41,20 @@ enum class ECharacterStatType : uint8
 	ATK				UMETA(DisplayName = "ATK"),
 	EXP				UMETA(DisplayName = "EXP"),
 };
+
+UENUM(BlueprintType)
+enum class EItemType : uint8
+{
+	CONSUMABLE		UMETA(DisplayName = "CONSUMABLE"),
+	EQUIPMENT		UMETA(DisplayName = "EQUIPMENT"),
+	NOTCOMSUMABLE	UMETA(DisplayName = "NOTCOMSUMABLE"),
+};
+
+
+UENUM(BlueprintType)
+enum class EPlayerQuestState : uint8
+{
+	EMPTY			UMETA(DisplayName = "EMPTY"),
+	ACCEPTED		UMETA(DisplayName = "ACCEPTED"),
+	COMPLETE		UMETA(DisplayName = "COMPLETE"),
+};
