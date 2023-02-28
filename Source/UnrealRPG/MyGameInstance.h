@@ -32,8 +32,11 @@ public:
 	TArray<FDialogData*> GetAllDialogData();
 	TArray<FQuestData*> GetAllQuestData();
 
-	//void SaveGameData();
-	//void LoadGameData();
+	void SavePlayerData(class APlayerCharacterBase* Player);
+	void LoadPlayerData(class APlayerCharacterBase* Player);
+
+private:
+	void InitlializePlayerData();
 
 private:
 	UPROPERTY()
@@ -51,4 +54,16 @@ private:
 	UPROPERTY()
 	class UDataTable* QuestList;
 
+	//test================
+	UPROPERTY()
+	FPlayerStatData SavePlayerStat;
+
+	UPROPERTY()
+	FQuestData SavePlayerQuest;
+
+	UPROPERTY()
+	EPlayerQuestState SavePlayerQuestState;
+
+	UPROPERTY()
+	TMap<FName, int32> SavePlayerIventoryItems;
 };

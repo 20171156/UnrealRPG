@@ -30,7 +30,10 @@ public:
 	void SetNewQuest(const FQuestData& Data);
 
 	UFUNCTION()
-	void ClearQuest();
+	void SetUpdateQuest();
+
+	UFUNCTION()
+	int32 ClearQuest();
 
 	UFUNCTION()
 	const FQuestData& GetQuestData() { return Quest; }

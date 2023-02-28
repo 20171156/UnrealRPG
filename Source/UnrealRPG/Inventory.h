@@ -29,13 +29,27 @@ public:
 	void InitializeInventory();
 
 	UFUNCTION()
-	void AddItem(FName ItemName, bool IsQuestItem = false);
+	void SetQuestItemName(FString ItemName);
 
 	UFUNCTION()
-	bool UseItem(FName ItemName, FItemData& ResultItemData, bool IsQuestItem = false);
+	void AddItem(FName ItemName/*, FString QuestItemName = FString{}*/);
+
+	UFUNCTION()
+	bool UseItem(FName ItemName, FItemData& ResultItemData/*, FString QuestItemName = FString{}*/);
+
+	UFUNCTION()
+	void DeleteItem(FString ItemName, int32 ItemCount);
 
 	UFUNCTION()
 	int32 GetItemCount(FName ItemName);
+
+	UFUNCTION()
+	void LoadInventoryItems(TMap<FName, int32> InventoryItems);
+
+	UFUNCTION()
+	void CheckExistQuestItem(/*FString ItemName*/);
+
+	TMap<FName, int32> GetInventoryItems();
 
 private:
 	UFUNCTION()
@@ -51,4 +65,7 @@ public:
 
 private:
 	TMap<FName, class UInventoryItem*> InventoryItemMap;
+
+	UPROPERTY()
+	FString QuestItemName;
 };

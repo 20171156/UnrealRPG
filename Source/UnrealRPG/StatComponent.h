@@ -32,6 +32,9 @@ private:
 	void SetLevel(const int32& NewLevel);
 
 public:
+	FPlayerStatData GetPlayerStat();
+	void InputPlayerStat(FPlayerStatData PlayerStat);
+
 	const FString& GetName() { return CharacterName; }
 	const int32& GetLevel() { return Level; }
 	const int32& GetAtk() { return Atk; }

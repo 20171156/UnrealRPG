@@ -11,6 +11,8 @@
 #include "GameEndWidget.h"
 #include "DialogWidget.h"
 
+#include "MyGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Runtime/Engine/Public/EngineUtils.h"
 
@@ -26,6 +28,12 @@ AUnrealRPGGameModeBase::AUnrealRPGGameModeBase()
 	}
 
 	PlayerControllerClass = APlayableController::StaticClass();
+}
+
+void AUnrealRPGGameModeBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
 }
 
 void AUnrealRPGGameModeBase::BeginPlay()
@@ -54,14 +62,19 @@ void AUnrealRPGGameModeBase::BeginPlay()
 	}
 
 	UWorld* world = GetWorld();
-	for (const auto& Player : TActorRange<APlayerCharacterBase>(world))
+	APlayerCharacterBase* Player = Cast<APlayerCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	if (IsValid(Player))
 	{
-		if (IsValid(Player))
-		{
-			PlayerMainWidget->BindWidget(Player->GetStatComponent(), Player->GetInventory(), Player->GetQuestSystem());
-			InventoryWidget->BindWidget(Player->GetInventory());
-			break;
-		}
+		PlayerMainWidget->BindWidget(Player->GetStatComponent(), Player->GetInventory(), Player->GetQuestSystem());
+		InventoryWidget->BindWidget(Player->GetInventory());
+	}
+
+	//새 맵 로드했을 때 넣을 데이터
+	auto DataInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (IsValid(DataInstance))
+	{
+		DataInstance->LoadPlayerData(Player);
 	}
 }
 
@@ -136,12 +149,10 @@ void AUnrealRPGGameModeBase::CloseDialogWidget()
 void AUnrealRPGGameModeBase::UpdatePlayerInteracting()
 {
 	UWorld* world = GetWorld();
-	for (const auto& Player : TActorRange<APlayerCharacterBase>(world))
+	APlayerCharacterBase* Player = Cast<APlayerCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	
+	if (IsValid(Player))
 	{
-		if (IsValid(Player))
-		{
-			Player->SetInteracting(IsOpenDialogWidget);
-			break;
-		}
+		Player->SetInteracting(IsOpenDialogWidget);
 	}
 }

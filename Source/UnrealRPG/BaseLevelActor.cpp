@@ -2,13 +2,14 @@
 
 
 #include "BaseLevelActor.h"
+#include "PlayerCharacterBase.h"
 #include "Engine/TargetPoint.h"
 #include "MonsterSpawnPoint.h"
 #include "MonsterCharacterBase.h"
 #include "Item.h"
+#include "CustomStruct.h"
 #include "MyGameInstance.h"
 #include "Kismet/GameplayStatics.h"
-#include "CustomStruct.h"
 #include "Runtime/Engine/Public/EngineUtils.h"
 
 ABaseLevelActor::ABaseLevelActor()
@@ -28,7 +29,7 @@ void ABaseLevelActor::BeginPlay()
 	Super::BeginPlay();
 
 	srand(time(0));
-	
+
 	UWorld* world = GetWorld();
 	for (const auto& TargetActor : TActorRange<AMonsterSpawnPoint>(world))
 	{
@@ -42,6 +43,11 @@ void ABaseLevelActor::BeginPlay()
 	{
 		SpawnMonster();
 	}
+}
+
+void ABaseLevelActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
 }
 
 void ABaseLevelActor::MonsterIsDead(AActor* DestroyedActor)
@@ -123,7 +129,10 @@ void ABaseLevelActor::SpawnItem(AActor* DestroyedActor)
 	SpawnParams.Owner = this;
 
 	auto ItemActor = GetWorld()->SpawnActor<AItem>(ItemClass, SpawnLocation, SpawnRotator, SpawnParams);
-	ItemActor->InitializeItemName(DataInstance->GetItemName(SectionNum));
+	if (IsValid(ItemActor))
+	{
+		ItemActor->InitializeItemName(DataInstance->GetItemName(SectionNum));
+	}
 
 	if (!IsValid(ItemActor))
 	{

@@ -59,16 +59,7 @@ void ATransferLevelPoint::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 		if (MapName != FName{})
 		{
 			auto DataInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-			if (MapName == FName())
-			{
-				//DataInstance->SaveGameData(Player);
-			}
-			else if (MapName == FName())
-			{
-				//DataInstance->SaveGameData(Player);
-
-			}
-
+			DataInstance->SavePlayerData(Player);
 			UGameplayStatics::OpenLevel(this, MapName);
 		}
 	}
@@ -78,4 +69,3 @@ void ATransferLevelPoint::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AAct
 {
 
 }
-

@@ -53,11 +53,18 @@ public:
 	UFUNCTION()
 	void InteractActor();
 
-	void SetQuestData(const FQuestData& QuestData);
-	
+	void SetQuestData(FQuestData QuestData);
+	FQuestData GetQuestData();
+	void ClearQuest();
+
 	void SetQuestState(EPlayerQuestState State) { QuestState = State; }
 	EPlayerQuestState GetQuestState() { return QuestState; }
 
+	void SetPlayerStat(FPlayerStatData PlayerStat);
+	FPlayerStatData GetPlayerStat();
+
+	void SetInventoryItemList(TMap<FName, int32> InventoryItems);
+	TMap<FName, int32> GetInventoryItemList();
 
 public:
 	UFUNCTION()
@@ -100,7 +107,7 @@ private:
 	class UCameraComponent* Camera;
 
 	UPROPERTY()
-	class UStatComponent* CurrentStat;
+	class UStatComponent* CurrentStat;//저장필요
 
 	UPROPERTY()
 	class UPlayableAnimInstance* PlayerAnimInstance;
@@ -109,10 +116,10 @@ private:
 	class UCapsuleComponent* WeaponCollisionComponent;
 
 	UPROPERTY()
-	class UInventory* Inventory;
+	class UInventory* Inventory;//저장필요
 
 	UPROPERTY()
-	class UPlayerQuestSystem* QuestSystem;
+	class UPlayerQuestSystem* QuestSystem;//저장필요
 
 	UPROPERTY()
 	bool bIsAttacking = false;
@@ -138,7 +145,7 @@ private:
 
 	//Quest 관련 Property
 	UPROPERTY()
-	EPlayerQuestState QuestState = EPlayerQuestState::EMPTY;
+	EPlayerQuestState QuestState = EPlayerQuestState::EMPTY;//저장필요
 
 	UPROPERTY()
 	int32 TestAttackCount = 0;

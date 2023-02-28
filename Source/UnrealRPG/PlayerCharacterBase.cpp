@@ -85,6 +85,16 @@ void APlayerCharacterBase::BeginPlay()
 void APlayerCharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (QuestState == EPlayerQuestState::ACCEPTED)
+	{
+		FQuestData Quest = QuestSystem->GetQuestData();
+		int32 CurrentItemCount = Inventory->GetItemCount(FName(*Quest.QuestItemName));
+		if (CurrentItemCount == Quest.QuestRequireCount)
+		{
+			QuestState = EPlayerQuestState::COMPLETE;
+		}
+	}
 }
 
 float APlayerCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -138,9 +148,51 @@ void APlayerCharacterBase::InteractActor()
 	}
 }
 
-void APlayerCharacterBase::SetQuestData(const FQuestData& QuestData)
+void APlayerCharacterBase::SetQuestData(FQuestData QuestData)
 {
 	QuestSystem->SetNewQuest(QuestData);
+
+	if (QuestData.QuestItemName != FString{})
+	{
+		//인벤토리에도 퀘스트 아이템 이름 연동시켜둔다
+		Inventory->SetQuestItemName(QuestData.QuestItemName);
+
+		//혹시 인벤토리에 퀘스트 아이템이 있을 수 있기 때문에 관련해서 업데이트한다
+		Inventory->CheckExistQuestItem();
+	}
+}
+
+FQuestData APlayerCharacterBase::GetQuestData()
+{
+	return QuestSystem->GetQuestData();
+}
+
+void APlayerCharacterBase::ClearQuest()
+{
+	FQuestData Quest = QuestSystem->GetQuestData();
+	Inventory->DeleteItem(Quest.QuestItemName, Quest.QuestRequireCount);//아이템을 인벤토리에서 갯수만큼 제거
+	int32 GainExp = QuestSystem->ClearQuest();//퀘스트 시스템에서 퀘스트 정리
+	CurrentStat->SetCurrentExp(GainExp);//보상 처리
+}
+
+void APlayerCharacterBase::SetPlayerStat(FPlayerStatData PlayerStat)
+{
+	CurrentStat->InputPlayerStat(PlayerStat);
+}
+
+FPlayerStatData APlayerCharacterBase::GetPlayerStat()
+{
+	return CurrentStat->GetPlayerStat();
+}
+
+void APlayerCharacterBase::SetInventoryItemList(TMap<FName, int32> InventoryItems)
+{
+	Inventory->LoadInventoryItems(InventoryItems);
+}
+
+TMap<FName, int32> APlayerCharacterBase::GetInventoryItemList()
+{
+	return Inventory->GetInventoryItems();
 }
 
 void APlayerCharacterBase::ChangeCollisionProfile(bool bAbleOverlap)
@@ -259,32 +311,15 @@ void APlayerCharacterBase::OnAnimMontageEnded(UAnimMontage* Montage, bool bInter
 
 void APlayerCharacterBase::PickUpItem(FName ItemName)
 {
-	FQuestData Data = QuestSystem->GetQuestData();
-	if (Data.QuestItemName == ItemName.ToString())
-	{
-		Inventory->AddItem(ItemName, true);
-	}
-	else
-	{
-		Inventory->AddItem(ItemName, false);
-	}
+	Inventory->AddItem(ItemName);
 }
 
 void APlayerCharacterBase::UseItem(FName ItemName)
 {
 	FItemData ResultItemData;
-	bool IsUse = false;
+	Inventory->UseItem(ItemName, ResultItemData);
 
-	FQuestData Data = QuestSystem->GetQuestData();
-	if (Data.QuestItemName == ItemName.ToString())
-	{
-		Inventory->UseItem(ItemName, ResultItemData, true);
-	}
-	else
-	{
-		Inventory->UseItem(ItemName, ResultItemData, false);
-	}
-	
+	bool IsUse = false;
 	if (IsUse)//아이템 사용됨
 	{
 		if (ItemName == FName("HPPotion"))

@@ -18,6 +18,7 @@ class UNREALRPG_API AUnrealRPGGameModeBase : public AGameModeBase
 public:
 	AUnrealRPGGameModeBase();
 
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 

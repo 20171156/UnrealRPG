@@ -11,7 +11,7 @@ UNPCDialog::UNPCDialog()
 {
 }
 
-void UNPCDialog::CreateNPCDialog(const EPlayerQuestState State, FName NPCName)
+void UNPCDialog::CreateNPCDialog(const EPlayerQuestState State, FName NPCName, bool IsSameNPC)
 {
     DataInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
     if (!IsValid(DataInstance))
@@ -35,7 +35,15 @@ void UNPCDialog::CreateNPCDialog(const EPlayerQuestState State, FName NPCName)
     }
     case EPlayerQuestState::COMPLETE:
     {
-        CompleteQuestDialog();
+        //퀘스트는 완료한 상태지만 대화를 나누는 npc가 퀘스트를 준 npc가 아니라면 일반 Dialog만 생성한다
+        if (IsSameNPC)
+        {
+            CompleteQuestDialog();
+        }
+        else
+        {
+            CommonDialog();
+        }
         break;
     }
     default:

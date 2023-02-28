@@ -19,7 +19,7 @@ public:
 	UNPCDialog();
 
 	UFUNCTION()
-	void CreateNPCDialog(const EPlayerQuestState State, FName NPCName);
+	void CreateNPCDialog(const EPlayerQuestState State, FName NPCName, bool IsSameNPC);
 
 	UFUNCTION()
 	void ResetDialogAndQuestData();

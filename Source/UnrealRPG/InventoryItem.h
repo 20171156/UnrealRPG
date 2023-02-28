@@ -27,6 +27,9 @@ public:
 	UFUNCTION()
 	bool DecreaseItem();
 
+	void SetQuestItem(bool QuestItem) { IsQuestItem = QuestItem; }
+	bool GetQuestItem(bool QuestItem) { return IsQuestItem; }
+
 public:
 	FName GetItemName() { return ItemName; }
 	const FItemData& GetItemData() { return ItemData; }
@@ -41,4 +44,7 @@ private:
 	
 	UPROPERTY()
 	int32 ItemCount;
+
+	UPROPERTY()
+	bool IsQuestItem = false;
 };

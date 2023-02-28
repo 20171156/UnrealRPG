@@ -74,7 +74,42 @@ void ANPC::ExecuteInteraction(APlayerCharacterBase* Player)
 
 	//상황에 맞는 Dialog와 Quest 만들기
 	EPlayerQuestState State = Player->GetQuestState();
-	NPCDialog->CreateNPCDialog(State, Tags[1]);
+	switch (State)
+	{
+	case EPlayerQuestState::EMPTY:
+	{
+		NPCDialog->CreateNPCDialog(State, Tags[1], false);
+
+		FQuestData CombineQuest = NPCDialog->GetCombineQuestData();
+		Player->SetQuestData(CombineQuest);
+		Player->SetQuestState(EPlayerQuestState::ACCEPTED);
+		break;
+	}
+	case EPlayerQuestState::ACCEPTED:
+	{
+		NPCDialog->CreateNPCDialog(State, Tags[1], false);
+		break;
+	}
+	case EPlayerQuestState::COMPLETE:
+	{
+		if (Player->GetQuestData().QuestNPCName == Tags[1].ToString())//퀘스트를 준 NPC와만 퀘스트를 종료할 수 있어야 한다
+		{
+			NPCDialog->CreateNPCDialog(State, Tags[1], true);
+
+			Player->ClearQuest();
+			Player->SetQuestState(EPlayerQuestState::EMPTY);
+		}
+		else
+		{
+			NPCDialog->CreateNPCDialog(State, Tags[1], false);
+		}
+		break;
+	}
+	default:
+	{
+		break;
+	}
+	}
 
 	//만든 Dialog를 DialogWidget에 전달
 	TArray<FString> NPCDialogArray = NPCDialog->GetDialogData();
@@ -83,13 +118,22 @@ void ANPC::ExecuteInteraction(APlayerCharacterBase* Player)
 		GameMode->OpenDialogWidget(Tags[1].ToString(), NPCDialogArray);
 	}
 
-	//QuestData는 Player에 전달(단, 이미 퀘스트를 받은 상태라면 전달할 필요 없음)
-	if (Player->GetQuestState() == EPlayerQuestState::EMPTY)
-	{
-		FQuestData CombineQuest = NPCDialog->GetCombineQuestData();
-		Player->SetQuestData(CombineQuest);
-		Player->SetQuestState(EPlayerQuestState::ACCEPTED);
-	}
+	////EMPTY상태 : QuestData는 Player에 전달(단, 이미 퀘스트를 받은 상태라면 전달할 필요 없음)
+	//if (State == EPlayerQuestState::EMPTY)
+	//{
+	//	FQuestData CombineQuest = NPCDialog->GetCombineQuestData();
+	//	Player->SetQuestData(CombineQuest);
+	//	Player->SetQuestState(EPlayerQuestState::ACCEPTED);
+	//}
+	////COMPLETE상태 : QuestData를 Clear상태로 바꾸고 플레이어의 상태도 다시 EMPTY로 바꿔준다
+	//else if (State == EPlayerQuestState::COMPLETE)
+	//{
+	//	if (Player->GetQuestData().QuestNPCName == Tags[1].ToString())//퀘스트를 준 NPC와만 퀘스트를 종료할 수 있어야 한다
+	//	{
+	//		Player->ClearQuest();
+	//		Player->SetQuestState(EPlayerQuestState::EMPTY);
+	//	}
+	//}
 
 	//그리고 Dialog 데이터는 초기화
 	NPCDialog->ResetDialogAndQuestData();

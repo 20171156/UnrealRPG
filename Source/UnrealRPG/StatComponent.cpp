@@ -19,7 +19,13 @@ void UStatComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-	SetLevel(1);//초기 레벨 1로 셋팅(추후 저장기능 만들면 수정)
+	//SetLevel(1);//초기 레벨 1로 셋팅(추후 저장기능 만들면 수정)
+	PlayerLevelChanged.Broadcast();
+	PlayerHpChanged.Broadcast();
+	PlayerMpChanged.Broadcast();
+	PlayerSpChanged.Broadcast();
+	PlayerExpChanged.Broadcast();
+
 	UE_LOG(LogTemp, Warning, TEXT("PlayableStatComponent Loading Complete"));
 }
 
@@ -41,13 +47,43 @@ void UStatComponent::SetLevel(const int32& NewLevel)
 		{
 			this->Level = PlayerStat->Level;
 			this->Atk = PlayerStat->Atk;
-			this->MaxExp = PlayerStat->Exp;
 
+			this->MaxExp = PlayerStat->Exp;
 			this->CurrentHp = this->MaxHp = PlayerStat->Hp;
 			this->CurrentSp = this->MaxSp = PlayerStat->Sp;
 			this->CurrentMp = this->MaxMp = PlayerStat->Mp;
 		}
 	}
+}
+
+FPlayerStatData UStatComponent::GetPlayerStat()
+{
+	//Level로 로드해서 Max데이터를 계산, 나머지 Current 데이터만 저장
+	FPlayerStatData PlayerStat;
+	PlayerStat.Level = Level;
+	PlayerStat.Atk = Atk;
+	PlayerStat.Hp = CurrentHp;
+	PlayerStat.Sp = CurrentSp;
+	PlayerStat.Mp = CurrentMp;
+	PlayerStat.Exp = CurrentExp;
+
+	return PlayerStat;
+}
+
+void UStatComponent::InputPlayerStat(FPlayerStatData CurrentPlayerStat)
+{
+	SetLevel(CurrentPlayerStat.Level);//레벨 대입해서 Max데이터를 초기화
+
+	CurrentHp = CurrentPlayerStat.Hp;
+	CurrentSp = CurrentPlayerStat.Sp;
+	CurrentMp = CurrentPlayerStat.Mp;
+	CurrentExp = CurrentPlayerStat.Exp;
+
+	PlayerLevelChanged.Broadcast();
+	PlayerHpChanged.Broadcast();
+	PlayerMpChanged.Broadcast();
+	PlayerSpChanged.Broadcast();
+	PlayerExpChanged.Broadcast();
 }
 
 void UStatComponent::SetName(const FString& NewName)

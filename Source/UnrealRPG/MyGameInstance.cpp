@@ -2,6 +2,7 @@
 
 
 #include "MyGameInstance.h"
+#include "PlayerCharacterBase.h"
 
 UMyGameInstance::UMyGameInstance()
 {
@@ -40,6 +41,8 @@ UMyGameInstance::UMyGameInstance()
 		QuestList = QuestDialogData.Object;
 		UE_LOG(LogTemp, Warning, TEXT("QuestList Loading Complete."));
 	}
+
+	InitlializePlayerData();
 
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance Loading Complete."));
 }
@@ -112,4 +115,33 @@ TArray<FQuestData*> UMyGameInstance::GetAllQuestData()
 	ItemList->GetAllRows(TEXT("Missing QuestData"), Arr);
 
 	return Arr;
+}
+
+void UMyGameInstance::SavePlayerData(APlayerCharacterBase* Player)
+{
+	//레벨이 교체될 때 플레이어의 퀘스트, 인벤토리, 플레이어 스탯 등의 데이터를 보관하고 있어야 한다
+	//항상 순서가 지켜져야 한다(퀘스트->인벤토리 순으로)
+	SavePlayerStat = Player->GetPlayerStat();//스탯
+	SavePlayerQuestState = Player->GetQuestState();//퀘스트 상태
+	SavePlayerQuest = Player->GetQuestData();//퀘스트 데이터
+	SavePlayerIventoryItems = Player->GetInventoryItemList();//인벤토리
+}
+
+void UMyGameInstance::LoadPlayerData(APlayerCharacterBase* Player)
+{
+	//항상 순서가 지켜져야 한다(퀘스트->인벤토리 순으로)
+	Player->SetPlayerStat(SavePlayerStat);
+	Player->SetQuestState(SavePlayerQuestState);
+	Player->SetQuestData(SavePlayerQuest);
+	Player->SetInventoryItemList(SavePlayerIventoryItems);
+}
+
+void UMyGameInstance::InitlializePlayerData()
+{
+	//항상 순서가 지켜져야 한다(퀘스트->인벤토리 순으로)
+	SavePlayerStat = *GetPlayerData(1);
+	SavePlayerStat.Exp = 0;
+	SavePlayerQuestState = EPlayerQuestState::EMPTY;
+	SavePlayerQuest;
+	SavePlayerIventoryItems;
 }

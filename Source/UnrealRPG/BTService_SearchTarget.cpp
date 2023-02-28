@@ -54,7 +54,7 @@ void UBTService_SearchTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 			{
 				OwnerComp.GetBlackboardComponent()->SetValueAsObject(FName(TEXT("Target")), OverlapResult.GetActor());
 				
-				DrawDebugSphere(World, Center, SearchRadius, 16, FColor::Green, false, 0.1f);
+				//DrawDebugSphere(World, Center, SearchRadius, 16, FColor::Green, false, 0.1f);
 
 				return;
 			}
@@ -62,14 +62,14 @@ void UBTService_SearchTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 
 		OwnerComp.GetBlackboardComponent()->SetValueAsObject(FName(TEXT("Target")), nullptr);
 		
-		DrawDebugSphere(World, Center, SearchRadius, 16, FColor::Red, false, 0.1f);
+		//DrawDebugSphere(World, Center, SearchRadius, 16, FColor::Red, false, 0.1f);
 	}
 	else
 	{
 		//바닥에도 안붙어있단 소리임
 		//추후 데스처리할 것
 		OwnerComp.GetBlackboardComponent()->SetValueAsObject(FName(TEXT("Target")), nullptr);
-		DrawDebugSphere(World, Center, SearchRadius, 16, FColor::Red, false, 0.1f);
+		//DrawDebugSphere(World, Center, SearchRadius, 16, FColor::Red, false, 0.1f);
 	}
 
 	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Search Target..."));

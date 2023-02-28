@@ -30,7 +30,6 @@ public:
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-
 private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	class UParticleSystemComponent* ParticleComponent;

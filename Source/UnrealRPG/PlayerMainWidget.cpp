@@ -147,15 +147,22 @@ void UPlayerMainWidget::UpdateQuestItemCount()
 	{
 		FQuestData Quest = QuestSystem->GetQuestData();
 		
-		if (nullptr != QuestItemCount)
+		if (Quest.QuestDialog == FString{})
 		{
-			int32 CurrentCount = Inventory->GetItemCount(FName(*Quest.QuestItemName));
-			FString CountText = FString::Printf(TEXT("%d / %d"), CurrentCount, Quest.QuestRequireCount);
-			QuestItemCount->SetText(FText::FromString(CountText));
-
-			if (CurrentCount >= Quest.QuestRequireCount)
+			QuestItemCount->SetText(FText{});
+		}
+		else
+		{
+			if (nullptr != QuestItemCount)
 			{
-				ChangeQuestDialogColor();
+				int32 CurrentCount = Inventory->GetItemCount(FName(*Quest.QuestItemName));
+				FString CountText = FString::Printf(TEXT("%d / %d"), CurrentCount, Quest.QuestRequireCount);
+				QuestItemCount->SetText(FText::FromString(CountText));
+
+				if (CurrentCount >= Quest.QuestRequireCount)
+				{
+					ChangeQuestDialogColor();
+				}
 			}
 		}
 	}

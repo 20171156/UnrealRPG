@@ -15,19 +15,31 @@ void UInventory::InitializeInventory()
 	ChangeMPPotion.Broadcast();
 }
 
-void UInventory::AddItem(FName ItemName, bool IsQuestItem/* = false*/)
+void UInventory::SetQuestItemName(FString ItemName)
+{
+	QuestItemName = ItemName;
+}
+
+void UInventory::AddItem(FName ItemName/*, FString QuestItemName = FString{}*/)
 {
 	auto ItemValue = InventoryItemMap.Find(ItemName);
-	
+
 	if (nullptr == ItemValue)//처음 추가한 경우 아이템 추가
 	{
-		UInventoryItem* Item = NewObject<UInventoryItem>(this, UInventoryItem::StaticClass());
-		Item->InitializeItemData(ItemName);
-		InventoryItemMap.Emplace(ItemName, Item);
-	
-		OnAddNewItem.Broadcast(Item);
+		UInventoryItem* NewItem = NewObject<UInventoryItem>(this, UInventoryItem::StaticClass());
+		NewItem->InitializeItemData(ItemName);
+		InventoryItemMap.Emplace(ItemName, NewItem);
+		OnAddNewItem.Broadcast(NewItem);
+		
+		//추가된 아이템이 퀘스트 아이템이라면 위젯에 갯수를 업데이트한다
+		if (ItemName.ToString() == QuestItemName)
+		{
+			NewItem->SetQuestItem(true);
+			OnAddQuestItem.Broadcast();
+		}
 
-		if (Item->GetItemData().ItemType == EItemType::CONSUMABLE)
+		//추가된 아이템이 물약이라면 PotionSlot을 업데이트한다
+		if (NewItem->GetItemData().ItemType == EItemType::CONSUMABLE)
 		{
 			UpdatepPotionSlotCount(ItemName);
 		}
@@ -35,30 +47,33 @@ void UInventory::AddItem(FName ItemName, bool IsQuestItem/* = false*/)
 	else//이미 존재하는 경우 갯수만 늘림
 	{
 		(*ItemValue)->IncreaseItem();
+		OnCountCheckItem.Broadcast(*ItemValue);
 
-		OnCountCheckItem.Broadcast((*ItemValue));
+		if (ItemName.ToString() == QuestItemName)
+		{
+			(*ItemValue)->SetQuestItem(true);
+			OnAddQuestItem.Broadcast();
+		}
 
 		if ((*ItemValue)->GetItemData().ItemType == EItemType::CONSUMABLE)
 		{
 			UpdatepPotionSlotCount(ItemName);
 		}
 	}
-
-	//추가된 아이템이 퀘스트 아이템이라면 위젯에 갯수를 업데이트한다
-	if (IsQuestItem)
-	{
-		OnAddQuestItem.Broadcast();
-	}
 }
 
-bool UInventory::UseItem(FName ItemName, FItemData& ResultItemData, bool IsQuestItem/* = false*/)
+bool UInventory::UseItem(FName ItemName, FItemData& ResultItemData/*, FString QuestItemName = FString{}*/)
 {
 	auto ItemValue = InventoryItemMap.Find(ItemName);
 
-	if (nullptr != ItemValue)//이미 존재하는 경우 갯수만 줄임(어쨌든 사용됨)
+	if (nullptr == ItemValue)//찾는 아이템 없을 경우(사용안됨)
+	{
+		return false;
+	}
+	else//이미 존재하는 경우 갯수만 줄임(어쨌든 사용됨)
 	{
 		bool IsZeroCount = (*ItemValue)->DecreaseItem();
-		OnCountCheckItem.Broadcast((*ItemValue));
+		OnCountCheckItem.Broadcast(*ItemValue);
 
 		if ((*ItemValue)->GetItemData().ItemType == EItemType::CONSUMABLE)
 		{
@@ -68,37 +83,88 @@ bool UInventory::UseItem(FName ItemName, FItemData& ResultItemData, bool IsQuest
 		if (IsZeroCount)
 		{
 			//TileView에서 아이템 제거
-			OnRemoveItem.Broadcast((*ItemValue));
+			OnRemoveItem.Broadcast(*ItemValue);
 		}
 
 		ResultItemData = (*ItemValue)->GetItemData();
+
 		return true;
 	}
-	else//찾는 아이템 없을 경우(사용안됨)
+}
+
+void UInventory::DeleteItem(FString ItemName, int32 ItemCount)
+{
+	if (QuestItemName == ItemName)
 	{
-		//...
-		return false;
+		bool IsZeroCount = false;
+		auto ItemValue = InventoryItemMap.Find(FName(*QuestItemName));
+		for (int32 i = 0; i < ItemCount; ++i)
+		{
+			IsZeroCount = (*ItemValue)->DecreaseItem();
+		}
+
+		OnCountCheckItem.Broadcast(*ItemValue);
+
+		if ((*ItemValue)->GetItemData().ItemType == EItemType::CONSUMABLE)
+		{
+			UpdatepPotionSlotCount(FName(*QuestItemName));
+		}
+
+		if (IsZeroCount)
+		{
+			OnRemoveItem.Broadcast(*ItemValue);
+		}
 	}
 
-	//사용된 아이템이 퀘스트 아이템이라면 위젯에 갯수를 업데이트한다
-	if (IsQuestItem)
-	{
-		OnAddQuestItem.Broadcast();
-	}
+	QuestItemName = FString{};//퀘스트 끝났으니까 데이터 초기화
 }
 
 int32 UInventory::GetItemCount(FName ItemName)
 {
 	auto ItemValue = InventoryItemMap.Find(ItemName);
 
-	if (nullptr != ItemValue)
-	{
-		return Cast<UInventoryItem>(*ItemValue)->GetItemCount();
-	}
-	else
+	if (nullptr == ItemValue)
 	{
 		return 0;
 	}
+	else
+	{
+		return Cast<UInventoryItem>(*ItemValue)->GetItemCount();
+	}
+}
+
+void UInventory::LoadInventoryItems(TMap<FName, int32> InventoryItems)
+{
+	for (const auto& Item : InventoryItems)
+	{
+		for (int32 i = 0; i < Item.Value; ++i)
+		{
+			AddItem(Item.Key);
+		}
+	}
+}
+
+void UInventory::CheckExistQuestItem(/*FString ItemName*/)
+{
+	for (const auto& Item : InventoryItemMap)
+	{
+		if (Item.Key.ToString() == QuestItemName)
+		{
+			Item.Value->SetQuestItem(true);
+		}
+	}
+}
+
+TMap<FName, int32> UInventory::GetInventoryItems()
+{
+	TMap<FName, int32> SaveInventoryItems;
+
+	for (const auto& Item : InventoryItemMap)
+	{
+		SaveInventoryItems.Emplace(Item.Key, Item.Value->GetItemCount());
+	}
+
+	return SaveInventoryItems;
 }
 
 void UInventory::UpdatepPotionSlotCount(FName ItemName)

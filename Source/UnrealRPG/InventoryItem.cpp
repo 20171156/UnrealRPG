@@ -36,13 +36,22 @@ bool UInventoryItem::DecreaseItem()
 	if (ItemCount > 0)
 	{
 		--ItemCount;
-	}
-	else
-	{
-		ItemCount = 0;
 
-		return true;
+		if (ItemCount == 0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
+	//else
+	//{
+	//	ItemCount = 0;
+
+	//	return true;
+	//}
 
 	return false;
 }
